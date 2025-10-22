@@ -133,7 +133,7 @@ QuicStreamBase::Send (Ptr<Packet> frame)
     {
       int sent = AppendingTx (frame);
 
-
+//缓冲区中应用层待发送数据的总大小（字节）。这是注入进来但尚未发送到网络的流量大小。####################################################################################
       NS_LOG_LOGIC ("Sending packets in stream. TxBufSize = " << m_txBuffer->AppSize () << " AvailableWindow = " << AvailableWindow () << " state " << QuicStreamStateName[m_streamStateSend]);
 
       if ((m_streamStateSend == OPEN or m_streamStateSend == SEND) and AvailableWindow () > 0)
@@ -272,7 +272,7 @@ QuicStreamBase::SendDataFrame (SequenceNumber32 seq, uint32_t maxSize)
   QuicSubheader sub = QuicSubheader::CreateStreamSubHeader (m_streamId, (uint64_t)seq.GetValue (), frame->GetSize (), m_sentSize != 0, lengthBit, m_fin);
   // std::cout<<"size"<< frame->GetSize ()<<std::endl;
   m_sentSize += frame->GetSize ();
-
+  std::cout<<"这是第一处size"<< frame->GetSize ()<<" Close Schedule DoClose at time " << Simulator::Now ().GetSeconds ()<<std::endl;
   frame->AddHeader (sub);
   int size = m_quicl5->Send (frame);
   if (size < 0)
@@ -465,6 +465,7 @@ QuicStreamBase::Recv (Ptr<Packet> frame, const QuicSubheader& sub, Address &addr
               // build empty packet
               Ptr<Packet> maxStream = Create<Packet> (0);
               maxStream->AddHeader (sub);
+                   std::cout<<"这是第22222处size"<< maxStream->GetSize ()<<std::endl;
               m_quicl5->Send (maxStream);
             }
 

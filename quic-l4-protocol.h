@@ -35,7 +35,7 @@
 #include "ns3/ip-l4-protocol.h"
 #include "quic-header.h"
 #include "ns3/socket.h"
-
+#include "ns3/output-stream-wrapper.h"  // 新增包含
 namespace ns3 {
 
 class QuicSocketBase;
@@ -429,6 +429,9 @@ protected:
 private:
   uint64_t m_totalSentBytes;       // 总发送字节数
   uint64_t m_totalReceivedBytes;   // 总接收字节数
+  uint64_t sum_totalSentBytes;       // 总发送字节数
+  uint64_t sum_totalReceivedBytes;   // 总接收字节数
+  bool  m_initialized;
   Time m_lastThroughputTime;       // 上次计算吞吐量的时间
   double m_throughputInterval;     // 计算间隔（秒），默认1秒
 

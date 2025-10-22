@@ -88,7 +88,7 @@ QuicSocketBase::GetInstanceTypeId () const
 {
   return QuicSocketBase::GetTypeId ();
 }
-
+//这段代码不是“运行”程序的逻辑，而是“配置”TCP套接字的选项。
 TypeId
 QuicSocketBase::GetTypeId (void)
 {
@@ -410,7 +410,7 @@ QuicSocketState::QuicSocketState ()
     m_maxAckDelay (Seconds (0)),
     m_lossTime (Seconds (0)),
     m_kMinimumWindow (
-      2 * m_segmentSize),
+      10 * m_segmentSize),
     m_kLossReductionFactor (0.5),
     m_endOfRecovery (0),
     m_kMaxTLPs (
@@ -927,13 +927,14 @@ QuicSocketBase::Send (Ptr<Packet> p)
 }
 
 int
-QuicSocketBase::AppendingTx (Ptr<Packet> frame)
+QuicSocketBase::AppendingTx (Ptr<Packet> frame)//QuicL5Protocol::Send (Ptr<Packet> frame)调用
 {
   NS_LOG_FUNCTION (this);
-
+      //std::cout <<"补充数据---------ing真的吗？"<<"AppendingTx 时间: " << Simulator::Now().GetNanoSeconds() << " ns - 被调用了" << std::endl;
   if (m_socketState != IDLE)
     {
       bool done = m_txBuffer->Add (frame);
+        //std::cout <<"补充数据--------已完成" <<"AppendingTx中的m_txBuffer->AppSize ()：    " << m_txBuffer->AppSize ()<<"  时间: " << Simulator::Now().GetNanoSeconds() <<std::endl;
       if (!done)
         {
           NS_LOG_INFO ("Exceeding Socket Tx Buffer Size");
@@ -946,15 +947,16 @@ QuicSocketBase::AppendingTx (Ptr<Packet> frame)
             win += AvailableWindow (i);
           }
           
-          NS_LOG_DEBUG ("Added packet to the buffer - txBufSize = " << m_txBuffer->AppSize ()
+        NS_LOG_DEBUG ("Added packet to the buffer - txBufSize = " << m_txBuffer->AppSize ()
                         << " AvailableWindow = " << win << " state " << QuicStateName[m_socketState]);
         }
-
-
+          //std::cout<<"m_socketState=  "<<m_socketState<<std::endl;
       if (m_socketState != IDLE)
         {
+          //std::cout<<"还能进这里m_socketState != IDLE   "<<std::endl;
           if (!m_sendPendingDataEvent.IsRunning ())
             {
+                 //std::cout<<"还能进这里m_sendPendingDataEvent"<<std::endl;
                 m_sendPendingDataEvent = Simulator::Schedule (
                   TimeStep (1), &QuicSocketBase::SendPendingData, this,
                   m_connected);
@@ -977,27 +979,38 @@ QuicSocketBase::AppendingTx (Ptr<Packet> frame)
 
 
 uint32_t
-QuicSocketBase::SendPendingData (bool withAck)
+QuicSocketBase::SendPendingData (bool withAck)//调用OnReceivedAckFrame
 {
   NS_LOG_FUNCTION (this << withAck);
+  //std::cout <<"SendPendingData被调用了" << m_txBuffer->AppSize ()<<"SendPendingData 时间: " << Simulator::Now().GetNanoSeconds() << " ns - 被调用了" << std::endl;
 
   if (m_txBuffer->AppSize () == 0)
     {
+      //std::cout <<"SendPendingData中的m_txBuffer：   " << m_txBuffer->AppSize () <<std::endl;
+      //std::cout <<"缓冲区空了？" << m_txBuffer->AppSize () <<std::endl;
       if (m_closeOnEmpty)
         {
           m_drainingPeriodEvent.Cancel ();
+          //std::cout <<"总不能是这里发的停止帧吧" << std::endl;
           SendConnectionClosePacket (0, "Scheduled connection close - no error");
         }
       NS_LOG_INFO ("Nothing to send");
+      //std::cout <<"缓冲区空了   被return了"<<std::endl;
       return false;
     }
 
   uint32_t nPacketsSent = 0;
-
+//优先处理流0（stream 0）的帧（QUIC中流0通常用于控制或握手数据）。
   // prioritize stream 0
+  //检查缓冲区中是否有流0的帧。如果有，继续循环。
+        //std::cout <<"SendPendingData经过前期检查" << m_txBuffer->AppSize () <<std::endl;
+
+  ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   while (m_txBuffer->GetNumFrameStream0InBuffer () > 0)
   {
+    //std::cout <<"第一个while-stream0: " << std::endl;
     // check pacing timer
+    //检查步调定时器（pacing timer）：如果启用步调（m_pacing为真），且定时器正在运行，则跳过发送（break），以避免过快发送导致拥塞（QUIC标准中步调用于平滑流量
     if (m_subflows[0]->m_tcb->m_pacing)
     {
       NS_LOG_DEBUG ("Pacing is enabled");
@@ -1008,7 +1021,7 @@ QuicSocketBase::SendPendingData (bool withAck)
         }
       NS_LOG_DEBUG ("Pacing Timer is not running");
     }
-
+//计算窗口：AvailableWindow(0)（子流0的可用拥塞窗口）、ConnectionWindow(0)（连接级接收窗口）、BytesInFlight(0)（子流0飞行中字节数）。这些是拥塞控制的关键指标。
     uint32_t win = AvailableWindow (0); //just use first subflow to deal with stream 0
     uint32_t connWin = ConnectionWindow (0);
     uint32_t bytesInFlight = BytesInFlight (0);
@@ -1022,11 +1035,14 @@ QuicSocketBase::SendPendingData (bool withAck)
 
 
     NS_LOG_DEBUG ("Send a frame for stream 0");
+    //生成下一个序列号next
     SequenceNumber32 next = ++m_subflows[0]->m_tcb->m_nextTxSequence;
     NS_LOG_INFO ("on path 0 SN " << next);
+//调用SendDataPacket(next, 0, m_queue_ack, 0)：发送流0的数据包。参数：序列号、最大大小0（表示自动计算）、是否带ACK、路径ID=0。
 
     SendDataPacket (next, 0, m_subflows[0]->m_queue_ack, 0);
-    
+    // 重新计算窗口并日志记录发送后状态（AFTER...）。
+
     win = AvailableWindow (0);
     connWin = ConnectionWindow (0);
     bytesInFlight = BytesInFlight (0);
@@ -1036,67 +1052,81 @@ QuicSocketBase::SendPendingData (bool withAck)
                                           << " BytesInFlight " << bytesInFlight
                                           << " BufferedSize " << m_txBuffer->AppSize ()
                                           << " MaxPacketSize " << GetSegSize ());
-
+// 递增nPacketsSent。
     ++nPacketsSent;
   }
+        //std::cout <<"SendPendingData经过stram0的while" << m_txBuffer->AppSize () <<std::endl;
 
-
+//调用调度器（m_scheduler）获取下一个路径ID的概率向量sendP
   std::vector<double> sendP = m_scheduler->GetNextPathIdToUse();
-
+  ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   for (uint8_t sendingPathId = 0; sendingPathId < sendP.size(); sendingPathId++)
   {
-    uint32_t availableWindow = AvailableWindow (sendingPathId);
-    uint32_t sendSize = m_txBuffer->AppSize () * sendP[sendingPathId];
-    uint32_t sendNumber = sendSize/GetSegSize();
+      //std::cout <<"就没有进入过处理其他流这里" << m_txBuffer->AppSize () <<std::endl;
+    uint32_t availableWindow = AvailableWindow (sendingPathId);//计算每个路径的可用窗口availableWindow。
+    uint32_t sendSize = m_txBuffer->AppSize () * sendP[sendingPathId];//计算发送大小sendSize：缓冲区总大小乘以路径比例sendP[sendingPathId]
+    uint32_t sendNumber = sendSize/GetSegSize();//计算包数sendNumber：发送大小除以段大小（GetSegSize()，QUIC的分段大小，通常接近MTU）。
+    // //std::cout <<"for循环 "<<"  sendingPathId "<<sendingPathId <<"  sendP.size()"<<sendP.size() << std::endl;
+    // //std::cout <<"                "<<"availableWindow "<<availableWindow <<"    sendSize"<<sendSize << std::endl;
     if (sendSize > availableWindow)
     {
       sendNumber = availableWindow/GetSegSize();
     } 
-
+//只要有包可发（sendNumber>0）、窗口可用、缓冲区非空：
+//处理其他流
+      //std::cout <<"其他流内循环while "<<"sendNumber > 0:"<<sendNumber <<"      availableWindow > 0："<<availableWindow <<"        m_txBuffer->AppSize ():"<< m_txBuffer->AppSize() << " SendDataPacket Schedule Close at time " << Simulator::Now ().GetSeconds ()  <<std::endl;
     while (sendNumber > 0 and availableWindow > 0 and m_txBuffer->AppSize () > 0)
       {
-        // check draining period
+             //std::cout <<"                内循环 "<<"sendNumber > 0："<<sendNumber <<"    availableWindow > 0："<<availableWindow << " SendDataPacket Schedule Close at time " << Simulator::Now ().GetSeconds ()  << std::endl;
+            // //std::cout <<"                                "<<"availableWindow "<<availableWindow <<"    sendSize"<<sendSize << std::endl;
+        // check draining period检查排水期：如果运行中，返回false（不能发送）。
         if (m_drainingPeriodEvent.IsRunning ())
           {
+             //std::cout <<"Draining period: no packets can be sent"<< std::endl;
             NS_LOG_INFO ("Draining period: no packets can be sent");
             return false;
           }
 
-        // check pacing timer
+        // check pacing timer检查步调定时器：类似流0处理，如果运行中，break。
         if (m_subflows[sendingPathId]->m_tcb->m_pacing)
           {
             NS_LOG_DEBUG ("Pacing is enabled");
             if (m_pacingTimer.IsRunning ())
               {
                 NS_LOG_INFO ("Skipping Packet due to pacing - for " << m_pacingTimer.GetDelayLeft ());
+                 //std::cout <<"Skipping Packet due to pacing - for "<< std::endl;
                 break;
               }
             NS_LOG_DEBUG ("Pacing Timer is not running");
           }
 
-        // check the state of the socket!
+        // check the state of the socket!检查socket状态：如果在连接中（CONNECTING_CLT/SVR），不发送数据，break。
         if (m_socketState == CONNECTING_CLT || m_socketState == CONNECTING_SVR)
           {
             NS_LOG_INFO ("CONNECTING_CLT and CONNECTING_SVR state; no data to transmit");
+             //std::cout <<"CONNECTING_CLT and CONNECTING_SVR state; no data to transmit "<< std::endl;
+
             break;
           }
 
         uint32_t availableData = m_txBuffer->AppSize ();
-
+//如果可用数据<窗口且非关闭模式，通知应用层提供更多数据
         if (availableData < availableWindow and !m_closeOnEmpty)
           {
             NS_LOG_INFO ("Ask the app for more data before trying to send");
             NotifySend (GetTxAvailable ());
           }
-
+//防止Silly Window Syndrome（愚蠢窗口综合征，TCP/QUIC常见问题）：如果窗口<段大小 且 数据>窗口，等待更大窗口，break。
         if (availableWindow < GetSegSize () and availableData > availableWindow and !m_closeOnEmpty)
           {
+            //std::cout <<"availableData: "<<availableData<< std::endl;
             NS_LOG_INFO ("Preventing Silly Window Syndrome. Wait to Send.");
+            //std::cout <<"Preventing Silly Window Syndrome. Wait to Send. "<< std::endl;
             break;
           }
-
+//生成下一个序列号next。
         SequenceNumber32 next = ++m_subflows[sendingPathId]->m_tcb->m_nextTxSequence;
-
+//计算发送大小s：min(窗口, 段大小)。
         uint32_t s = std::min (availableWindow, GetSegSize ());
 
         uint32_t win = AvailableWindow (sendingPathId); // mark: to be AvailableWindow (m_lastUsedsFlowIdx)
@@ -1112,7 +1142,10 @@ QuicSocketBase::SendPendingData (bool withAck)
 
         NS_LOG_INFO ("on path " << sendingPathId << " SN " << next);
         // uint32_t sz =
-        SendDataPacket (next, s, withAck, sendingPathId);
+        //调用SendDataPacket(next, s, withAck, sendingPathId)：核心发送函数，发送数据包。
+        //std::cout <<"核心发送位置"<< std::endl;
+
+        SendDataPacket (next, s, withAck, sendingPathId);///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
         win = AvailableWindow (sendingPathId);
         connWin = ConnectionWindow (sendingPathId);
@@ -1123,14 +1156,14 @@ QuicSocketBase::SendPendingData (bool withAck)
                                     << " BytesInFlight " << bytesInFlight
                                     << " BufferedSize " << m_txBuffer->AppSize ()
                                     << " MaxPacketSize " << GetSegSize ());
-
+//递增nPacketsSent，更新窗口，递减sendNumber
         ++nPacketsSent;
 
         availableWindow = AvailableWindow(sendingPathId);
         sendNumber--;
       }
   }
-
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   if (nPacketsSent > 0)
     {
       NS_LOG_INFO ("SendPendingData sent " << nPacketsSent << " packets");
@@ -1263,18 +1296,21 @@ uint32_t
 QuicSocketBase::SendDataPacket (SequenceNumber32 packetNumber, uint32_t maxSize, bool withAck, uint8_t pathId)
 {
   NS_LOG_FUNCTION (this << packetNumber << maxSize << withAck);
-
+  //std::cout << this << "packetNumber: " << packetNumber << " maxSize:" << maxSize << "withAck: " << withAck << std::endl;
   // maxSize = std::min (m_subflows[pathId]->m_tcb->m_cWnd.Get(), maxSize);
 
   if (!m_drainingPeriodEvent.IsRunning ())
     {
       m_idleTimeoutEvent.Cancel ();
       NS_LOG_LOGIC (this << " SendDataPacket Schedule Close at time " << Simulator::Now ().GetSeconds () << " to expire at time " << (Simulator::Now () + m_idleTimeout.Get ()).GetSeconds ());
-      m_idleTimeoutEvent = Simulator::Schedule (m_idleTimeout, &QuicSocketBase::Close, this);
+       //std::cout<<"我怀疑就是这里1"<<std::endl;
+
+      m_idleTimeoutEvent = Simulator::Schedule (m_idleTimeout, &QuicSocketBase::Close, this);//这里调用了close函数
     }
   else
     {
       NS_LOG_INFO ("Draining period event running");
+       //std::cout<<"Draining period event running"<<std::endl;
       return -1;
     }
 
@@ -1284,11 +1320,22 @@ QuicSocketBase::SendDataPacket (SequenceNumber32 packetNumber, uint32_t maxSize,
     {
       p = m_txBuffer->NextStream0Sequence (packetNumber);
       NS_ABORT_MSG_IF (p == 0, "No packet for stream 0 in the buffer!");
+      if (p == 0) 
+      {
+          //std::cout << "No packet for stream 0 in the buffer!" << std::endl;
+      }
+      else
+      {
+          //std::cout << "No packet for stream 0 in the buffer!"  << " p = m_txBuffer:" << p << std::endl;
+      }
     }
   else
     {
       NS_LOG_LOGIC (this << " SendDataPacket - sending packet " << packetNumber.GetValue () << " of size " << maxSize << " at time " << Simulator::Now ().GetSeconds ());
-      m_idleTimeoutEvent = Simulator::Schedule (m_idleTimeout, &QuicSocketBase::Close, this);
+      //std::cout << this << " SendDataPacket - sending packet " << packetNumber.GetValue () << " of size " << maxSize << " at time " << Simulator::Now ().GetSeconds () << std::endl;
+       //std::cout<<"我怀疑就是这里2"<<std::endl;
+
+      m_idleTimeoutEvent = Simulator::Schedule (m_idleTimeout, &QuicSocketBase::Close, this);//这里调用了close函数
       p = m_txBuffer->NextSequence (maxSize, packetNumber, pathId);
     }
 
@@ -1371,7 +1418,8 @@ QuicSocketBase::SendDataPacket (SequenceNumber32 packetNumber, uint32_t maxSize,
 
   head.SetPathId(pathId);
   // m_subflows[pathId]->Add(packetNumber);
-  m_quicl4->SendPacket (this, p, head);
+         //std::cout<<"下一层发送核心函数"<<std::endl;
+  m_quicl4->SendPacket (this, p, head);////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   m_txTrace (p, head, this);
   NotifyDataSent (sz);
 
@@ -1580,14 +1628,18 @@ QuicSocketBase::AvailableWindow (uint8_t pathId)
   
   uint32_t win = std::min (m_max_data, m_subflows[pathId]->m_tcb->m_cWnd.Get()); // Number of bytes allowed to be outstanding
   uint32_t inflight = BytesInFlight (pathId);   // Number of outstanding bytes
+  std::cout <<"*********************InFlight=" << inflight << ", Win////m_cWnd=" << win << "时间"<< Simulator::Now().GetNanoSeconds() << " ns - 被调用了" <<std::endl;
 
   if (inflight > win)
     {
       NS_LOG_INFO ("InFlight=" << inflight << ", Win=" << win << " availWin=0");
+      // //std::cout <<"*********************InFlight=" << inflight << ", Win=" << win << " availWin=0" << std::endl;
+
       return 0;
     }
 
   NS_LOG_INFO ("InFlight=" << inflight << ", Win=" << win << " availWin=" << win - inflight);
+  // //std::cout <<"InFlight=" << inflight << ", Win=" << win << " availWin=" << win - inflight<< std::endl;
   return win - inflight;
 
 }
@@ -1604,7 +1656,8 @@ QuicSocketBase::ConnectionWindow (uint8_t pathId)
   return (inFlight > m_max_data) ? 0 : m_max_data - inFlight;
 }
 
-
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//计算飞行字节
 uint32_t
 QuicSocketBase::BytesInFlight (uint8_t pathId) 
 {
@@ -1674,6 +1727,7 @@ QuicSocketBase::ScheduleCloseAndSendConnectionClosePacket ()
 {
   m_drainingPeriodEvent.Cancel ();
   NS_LOG_LOGIC (this << " Close Schedule DoClose at time " << Simulator::Now ().GetSeconds () << " to expire at time " << (Simulator::Now () + m_drainingPeriodTimeout.Get ()).GetSeconds ());
+   //std::cout<<"等待m_drainingPeriodTimeout"<<std::endl;
   m_drainingPeriodEvent = Simulator::Schedule (m_drainingPeriodTimeout, &QuicSocketBase::DoClose, this);
   SendConnectionClosePacket (0, "Scheduled connection close - no error");
 }
@@ -1685,30 +1739,72 @@ QuicSocketBase::Close (void)
   NS_LOG_FUNCTION (this);
   NS_LOG_INFO (this << " Close at time " << Simulator::Now ().GetSeconds ());
 
-  // std::cout << this << " Close at time " << Simulator::Now ().GetSeconds ()<<std::endl;
+  //std::cout << this << " Close at time " << Simulator::Now ().GetSeconds ()<<std::endl;
   m_receivedTransportParameters = false;
-
+//ypy版本，删除SetState (CLOSING);
   if (m_idleTimeoutEvent.IsRunning () and m_socketState != IDLE
       and m_socketState != CLOSING)   //Connection Close from application signal
     {
-      if(!m_txBuffer->SentListIsEmpty()) {
+      if(!m_txBuffer->SentListIsEmpty() ) //这里是ypy改的整个if都改了
+      {
         m_appCloseSentListNoEmpty = true;
-      } else {
+      } 
+      else  if(m_txBuffer->SentListIsEmpty() and m_txBuffer->AppSize() == 0)
+      {
         m_appCloseSentListNoEmpty = false;
-        SetState (CLOSING);
+        //std::cout<<"close设置closing1"<<std::endl;
+        //SetState (CLOSING);
         if (m_flushOnClose)
           {
             m_closeOnEmpty = true;
+             //std::cout<<"我怀疑就是这里"<<std::endl;
           }
         else
           {
+            //std::cout<<"进入ScheduleCloseAndSendConnectionClosePacket"<<std::endl;
+            ScheduleCloseAndSendConnectionClosePacket ();
+          }
+      }
+      else
+      {
+         m_appCloseSentListNoEmpty = false;
+        // SetState (CLOSING);
+        if (m_flushOnClose)
+          {
+            m_closeOnEmpty = true;
+             //std::cout<<"我怀疑就是这里"<<std::endl;
+          }
+        else
+          {
+            //std::cout<<"进入ScheduleCloseAndSendConnectionClosePacket"<<std::endl;
             ScheduleCloseAndSendConnectionClosePacket ();
           }
       } 
     }
+// //原版
+//   if (m_idleTimeoutEvent.IsRunning () and m_socketState != IDLE
+//       and m_socketState != CLOSING)   //Connection Close from application signal
+//     {
+//       if(!m_txBuffer->SentListIsEmpty()) {
+//         m_appCloseSentListNoEmpty = true;
+//       } else {
+//         m_appCloseSentListNoEmpty = false;
+//         //std::cout<<"close设置closing1"<< " Close Schedule DoClose at time " << Simulator::Now ().GetNanoSeconds () <<std::endl;
+//         SetState (CLOSING);
+//         if (m_flushOnClose)
+//           {
+//             m_closeOnEmpty = true;
+//           }
+//         else
+//           {
+//             ScheduleCloseAndSendConnectionClosePacket ();
+//           }
+//       } 
+//     }
   else if (m_idleTimeoutEvent.IsExpired () and m_socketState != CLOSING
            and m_socketState != IDLE and m_socketState != LISTENING) //Connection Close due to Idle Period termination
     {
+
       SetState (CLOSING);
       m_drainingPeriodEvent.Cancel ();
       NS_LOG_LOGIC (
@@ -1735,7 +1831,7 @@ QuicSocketBase::Close (void)
 
 /* Send a CONNECTION_CLOSE frame */
 uint32_t
-QuicSocketBase::SendConnectionClosePacket (uint16_t errorCode, std::string phrase)
+QuicSocketBase::SendConnectionClosePacket (uint16_t errorCode, std::string phrase)//这个函数包上一个外壳就约等于ScheduleCloseAndSendConnectionClosePacket
 {
   NS_LOG_FUNCTION (this);
 
@@ -2085,7 +2181,7 @@ QuicSocketBase::OnReceivedFrame (QuicSubheader &sub)
   NS_LOG_FUNCTION (this << (uint64_t)sub.GetFrameType ());
 
   uint8_t frameType = sub.GetFrameType ();
-
+//std::cout<<"就不能调用这个吗？"<<std::endl;
   switch (frameType)
     {
 
@@ -2096,7 +2192,9 @@ QuicSocketBase::OnReceivedFrame (QuicSubheader &sub)
 
       case QuicSubheader::CONNECTION_CLOSE:
         NS_LOG_INFO ("Received CONNECTION_CLOSE frame");
-        Close ();
+          //std::cout<<"我怀疑就是这里3"<<std::endl;
+
+        Close ();//这里调用了close函数
         break;
 
       case QuicSubheader::APPLICATION_CLOSE:
@@ -2176,6 +2274,7 @@ QuicSocketBase::OnReceivedFrame (QuicSubheader &sub)
         break;
 
       default:
+        //std::cout<< "OnReceivedFrame调用了AbortConnection"  <<std::endl;
         AbortConnection (
           QuicSubheader::TransportErrorCodes_t::PROTOCOL_VIOLATION,
           "Received Corrupted Frame");
@@ -2249,7 +2348,7 @@ QuicSocketBase::OnSendingAckFrame (uint8_t pathId)
       ackFrame->AddHeader (maxData);
       m_subflows[pathId]->m_lastMaxData = 0;
     }
-  // std::cout<<"subheader pathid "<<sub.GetPathId()<<"\n";
+  // //std::cout<<"subheader pathid "<<sub.GetPathId()<<"\n";
   return ackFrame;
 }
 
@@ -2310,6 +2409,7 @@ QuicSocketBase::OnReceivedAckFrame (QuicSubheader &sub)
           if (m_quicCongestionControlLegacy && !lostPackets.empty ())
             {
               // Reset congestion window and go into loss mode
+                   std::cout<<"m_kMinimumWindow大小："<<m_subflows[pathId]->m_tcb->m_kMinimumWindow<<std::endl;
               m_subflows[pathId]->m_tcb->m_cWnd = m_subflows[pathId]->m_tcb->m_kMinimumWindow;
               m_subflows[pathId]->m_tcb->m_endOfRecovery = m_subflows[pathId]->m_tcb->m_highTxMark;
               m_subflows[pathId]->m_tcb->m_ssThresh = m_congestionControl->GetSsThresh (
@@ -2334,8 +2434,9 @@ QuicSocketBase::OnReceivedAckFrame (QuicSubheader &sub)
   // Find lost packets
   std::vector<Ptr<QuicSocketTxItem> > lostPackets = m_txBuffer->DetectLostPackets (pathId);
 
-  if (m_appCloseSentListNoEmpty && m_txBuffer->SentListIsEmpty()){
-    Close();
+  if (m_appCloseSentListNoEmpty && m_txBuffer->SentListIsEmpty()){//m_appCloseSentListNoEmpty表示"应用层已请求关闭连接，但当时发送列表
+     //std::cout<<"我怀疑就是这里4"<<std::endl;
+    Close();//这里调用了close函数
   }
 
 
@@ -2374,6 +2475,7 @@ QuicSocketBase::OnReceivedAckFrame (QuicSubheader &sub)
           // Process the ACK
           if(m_enableMultipath && m_ccType == OLIA)
           {
+            std::cout<<"OLIA拥塞控制"<<std::endl;
             m_subflows[pathId]->m_tcb->m_bytesBeforeLost2 += ackedBytes;
             double alpha = GetOliaAlpha(pathId);
             double sum_rate = 0;
@@ -2387,6 +2489,7 @@ QuicSocketBase::OnReceivedAckFrame (QuicSubheader &sub)
           }
           else
           {
+            std::cout<<"quicNEWreno拥塞控制"<<std::endl;
             DynamicCast<QuicCongestionOps> (m_congestionControl)->OnAckReceived (m_subflows[pathId]->m_tcb, sub, ackedPackets, rs);
           
           }
@@ -2449,6 +2552,7 @@ QuicSocketBase::OnReceivedAckFrame (QuicSubheader &sub)
     }
 
 
+     //std::cout<<"还能进这里OnReceivedAckFrame"<<std::endl;
 
   // try to send more data
   SendPendingData (m_connected);
@@ -2480,6 +2584,7 @@ QuicSocketBase::OnReceivedTransportParameters (
 
   if (m_receivedTransportParameters)
     {
+      //std::cout<< "OnReceivedTransportParameters111调用了AbortConnection"  <<std::endl;
       AbortConnection (
         QuicSubheader::TransportErrorCodes_t::TRANSPORT_PARAMETER_ERROR,
         "Duplicate transport parameters reception");
@@ -2519,6 +2624,7 @@ QuicSocketBase::OnReceivedTransportParameters (
       < QuicSocketBase::MIN_INITIAL_PACKET_SIZE
       or transportParameters.GetMaxPacketSize () > 65527)
     {
+      //std::cout<< "OnReceivedTransportParameters222调用了AbortConnection"  <<std::endl;
       AbortConnection (
         QuicSubheader::TransportErrorCodes_t::TRANSPORT_PARAMETER_ERROR,
         "Invalid Max Packet Size value provided");
@@ -2631,7 +2737,7 @@ QuicSocketBase::DoClose (void)
 {
   NS_LOG_FUNCTION (this);
   NS_LOG_INFO (this << " DoClose at time " << Simulator::Now ().GetSeconds ());
-
+//std::cout<<"执行了DoClose"<<std::endl;
   if (m_socketState != IDLE)
     {
       SetState (IDLE);
@@ -2651,81 +2757,100 @@ QuicSocketBase::ReceivedData (Ptr<Packet> p, const QuicHeader& quicHeader,
 
   //For multipath Implementation
   uint8_t pathId = quicHeader.GetPathId();
-  m_currentPathId = pathId;
-  m_currentFromAddress = address;
+  m_currentPathId = pathId;//更新当前路径ID成员变量m_currentPathId，记录这个包来自哪个路径。
+  m_currentFromAddress = address;//发送方的地址（用于IPv4/IPv6等）。
+  // //std::cout<< "发送方的地址==address"  <<address<<std::endl;
 
   NS_LOG_INFO ("Received packet of size " << p->GetSize ());
+  //如果不在排水期，则进入if块重置空闲超时；否则，直接返回丢弃包。
   if (!m_drainingPeriodEvent.IsRunning ())
     {
-      m_idleTimeoutEvent.Cancel ();   // reset the IDLE timeout
+      m_idleTimeoutEvent.Cancel ();   // 每次发送数据包（SendDataPacket被调用时），都会重置这个定时器。意思是“只要有数据发送，就延长空闲超时”。
       NS_LOG_LOGIC (
         this << " ReceivedData Schedule Close at time " << Simulator::Now ().GetSeconds () << " to expire at time " << (Simulator::Now () + m_idleTimeout.Get ()).GetSeconds ());
-      m_idleTimeoutEvent = Simulator::Schedule (m_idleTimeout, &QuicSocketBase::Close, this);
+         //std::cout<<"我怀疑就是这里5"<<std::endl;
+
+        m_idleTimeoutEvent = Simulator::Schedule (m_idleTimeout, &QuicSocketBase::Close, this);//这句原来没注释
+       //std::cout<<"执行完receivedata的close    m_socketState ==   "<<m_socketState<<std::endl;
+
     }
   else   // If the socket is in Draining Period, discard the packets
     {
       return;
     }
 
-  int onlyAckFrames = 0;
-  bool unsupportedVersion = false;
-
+  int onlyAckFrames = 0;//用于标记包是否只包含ACK帧
+  bool unsupportedVersion = false;//标记版本是否不支持
+//检查头部是否为0-RTT（零往返时间）保护包，且socket处于LISTENING状态（服务器监听中）////////////////////////////////////////////////////////////////////////////////////////////////
   if (quicHeader.IsORTT () and m_socketState == LISTENING)
     {
+  //std::cout<< "接收m_socketState==LISTENING"  <<std::endl;
 
       if (m_serverBusy)
         {
+          //如果服务器忙碌（m_serverBusy为true），调用AbortConnection中止连接，发送错误码"SERVER_BUSY"并返回。防止服务器过载。
+          //std::cout<< "quicHeader.IsORTT ()调用了AbortConnection"  <<std::endl;
           AbortConnection (QuicSubheader::TransportErrorCodes_t::SERVER_BUSY,
                            "Server too busy to accept new connections");
           return;
         }
 
       m_couldContainTransportParameters = true;
-
+    //调用m_quicl5->DispatchRecv分派接收数据（m_quicl5是QuicL5Protocol对象，处理应用层）。返回值为onlyAckFrames
       onlyAckFrames = m_quicl5->DispatchRecv (p, address);
+      //将接收到的包号添加到对应子流的m_receivedPacketNumbers向量中，用于跟踪和生成ACK帧
       m_subflows[pathId]->m_receivedPacketNumbers.push_back (quicHeader.GetPacketNumber ());
 
       m_connected = true;
+      //切换密钥阶段（key phase），用于加密保护。QUIC使用密钥阶段来轮换加密密钥。如果当前是PHASE_ONE，则切换到PHASE_ZERO，反之亦然。
       m_keyPhase == QuicHeader::PHASE_ONE ? m_keyPhase =
         QuicHeader::PHASE_ZERO :
         m_keyPhase =
           QuicHeader::PHASE_ONE;
+          //将socket状态设置为OPEN（打开），表示连接就绪可传输数据。
       SetState (OPEN);
+      //立即调度ConnectionSucceeded函数，通知上层连接成功（可能触发回调）。
       Simulator::ScheduleNow (&QuicSocketBase::ConnectionSucceeded, this);
       m_congestionControl->CongestionStateSet (m_subflows[pathId]->m_tcb,TcpSocketState::CA_OPEN);
       m_couldContainTransportParameters = false;
 
     }
+//检查头部是否为INITIAL（初始握手包），且socket处于CONNECTING_SVR（服务器连接中）。这是服务器处理客户端初始握手的逻辑。////////////////////////////////////////////////////////////////////////////////////////////////
   else if (quicHeader.IsInitial () and m_socketState == CONNECTING_SVR)
     {
+        //std::cout<< "接收m_socketState==CONNECTING_SVR  &  IsInitial"  <<std::endl;
+
       NS_LOG_INFO ("Server receives INITIAL");
       if (m_serverBusy)
         {
+          //std::cout<< "quicHeader.IsInitial () 调用了AbortConnection"  <<std::endl;
           AbortConnection (QuicSubheader::TransportErrorCodes_t::SERVER_BUSY,
-                           "Server too busy to accept new connections");
+                           "Server too busy to accept new connections");//同上，如果服务器忙碌，中止连接。
           return;
         }
-
+        //检查初始包大小是否小于最小要求（1200字节，QUIC规范要求以防止放大攻击）。如果太小，构建错误消息并中止连接（协议违规）。
       if (p->GetSize () < QuicSocketBase::MIN_INITIAL_PACKET_SIZE)
         {
           std::stringstream error;
           error << "Initial Packet smaller than "
                 << QuicSocketBase::MIN_INITIAL_PACKET_SIZE << " octects";
+          //std::cout<< "p->GetSize () < QuicSocketBase::MIN_INITIAL_PACKET_SIZE 调用了AbortConnection"  <<std::endl;
           AbortConnection (QuicSubheader::TransportErrorCodes_t::PROTOCOL_VIOLATION,
             error.str ().c_str ());
           return;
         }
-
+       // 同上，分派接收数据。
       onlyAckFrames = m_quicl5->DispatchRecv (p, address);
+      //同上，记录包号。
       m_subflows[pathId]->m_receivedPacketNumbers.push_back (quicHeader.GetPacketNumber ());
-
+        //检查版本是否支持（调用IsVersionSupported）。如果支持，重置参数标志，并发送握手响应（HANDSHAKE类型）。
       if (IsVersionSupported (quicHeader.GetVersion ()))
         {
           m_couldContainTransportParameters = false;
           SendInitialHandshake (QuicHeader::HANDSHAKE, quicHeader, p);
           
         }
-      else
+      else//如果版本不支持，设置unsupportedVersion为true，并发送版本协商包。
         {
           NS_LOG_INFO (this << " WRONG VERSION " << quicHeader.GetVersion ());
           unsupportedVersion = true;
@@ -2734,8 +2859,11 @@ QuicSocketBase::ReceivedData (Ptr<Packet> p, const QuicHeader& quicHeader,
       
       return;
     }
+//检查头部是否为HANDSHAKE（握手包），且socket处于CONNECTING_CLT（客户端连接中）。这是客户端处理服务器握手响应的逻辑。注释提到传输参数接收可能导致未定义行为。
   else if (quicHeader.IsHandshake () and m_socketState == CONNECTING_CLT)   // Undefined compiler behaviour if i try to receive transport parameters
     {
+      //std::cout<< "接收m_socketState==CONNECTING_CLT  &  IsHandshake"  <<std::endl;
+
       NS_LOG_INFO ("Client receives HANDSHAKE");
 
       onlyAckFrames = m_quicl5->DispatchRecv (p, address);
@@ -2751,8 +2879,11 @@ QuicSocketBase::ReceivedData (Ptr<Packet> p, const QuicHeader& quicHeader,
 
       return;
     }
+//服务器接收握手包，且处于CONNECTING_SVR状态。
   else if (quicHeader.IsHandshake () and m_socketState == CONNECTING_SVR)
     {
+      //std::cout<< "接收m_socketState==CONNECTING_SVR  &  IsHandshake"  <<std::endl;
+
       NS_LOG_INFO ("Server receives HANDSHAKE");
 
       //For multipath implementation
@@ -2763,17 +2894,22 @@ QuicSocketBase::ReceivedData (Ptr<Packet> p, const QuicHeader& quicHeader,
       SetState (OPEN);
       Simulator::ScheduleNow (&QuicSocketBase::ConnectionSucceeded, this);
       m_congestionControl->CongestionStateSet (m_subflows[pathId]->m_tcb,TcpSocketState::CA_OPEN);
+      //发送挂起的待发数据（带ACK）。
+      //std::cout<<"还能进这里ReceivedData"<<std::endl;
       SendPendingData (true);
 
       return;
     }
+//客户端接收版本协商包，且处于CONNECTING_CLT状态。
   else if (quicHeader.IsVersionNegotiation () and m_socketState == CONNECTING_CLT)
     {
-      NS_LOG_INFO ("Client receives VERSION_NEGOTIATION");
+      //std::cout<< "接收m_socketState==CONNECTING_CLT  &  IsVersionNegotiation"  <<std::endl;
 
+      NS_LOG_INFO ("Client receives VERSION_NEGOTIATION");
+      //分配缓冲区并复制包数据，用于解析版本列表。
       uint8_t *buffer = new uint8_t[p->GetSize ()];
       p->CopyData (buffer, p->GetSize ());
-
+        //解析包数据，每4字节一个版本号，转换为uint32_t并存入向量receivedVersions（大端序转换）。
       std::vector<uint32_t> receivedVersions;
       for (uint8_t i = 0; i < p->GetSize (); i = i + 4)
         {
@@ -2798,7 +2934,7 @@ QuicSocketBase::ReceivedData (Ptr<Packet> p, const QuicHeader& quicHeader,
                 }
             }
         }
-
+        //在接收版本中查找匹配的支持版本。如果找到，设置foundVersion
       if (foundVersion != 0)
         {
           NS_LOG_INFO ("A matching supported version is found " << foundVersion << " re-send initial");
@@ -2807,6 +2943,7 @@ QuicSocketBase::ReceivedData (Ptr<Packet> p, const QuicHeader& quicHeader,
         }
       else
         {
+          //std::cout<< "quicHeader.IsVersionNegotiation () 调用了AbortConnection"  <<std::endl;
           AbortConnection (
             QuicSubheader::TransportErrorCodes_t::VERSION_NEGOTIATION_ERROR,
             "No supported Version found by the Client");
@@ -2814,8 +2951,11 @@ QuicSocketBase::ReceivedData (Ptr<Packet> p, const QuicHeader& quicHeader,
         }
       return;
     }
+  //注释表示这里可能需要处理ACK（待办）。提到如果包只含ACK，不能显式ACK它，并检查延迟ACK。
   else if (quicHeader.IsShort () and m_socketState == OPEN)
     {
+       //std::cout<< "接收m_socketState==OPEN  &  IsShort"  <<std::endl;
+
       // TODOACK here?
       // we need to check if the packet contains only an ACK frame
       // in this case we cannot explicitely ACK it!
@@ -2825,13 +2965,18 @@ QuicSocketBase::ReceivedData (Ptr<Packet> p, const QuicHeader& quicHeader,
       onlyAckFrames = m_quicl5->DispatchRecv (p, address);
 
     }
+  //如果状态为CLOSING（关闭中）。
   else if (m_socketState == CLOSING)
     {
+     //std::cout<< "接收m_socketState==CLOSING "  <<std::endl;
       AbortConnection (m_transportErrorCode,
                        "Received packet in Closing state");
     }
+  //
   else
     {
+                  //std::cout<< "接收m_socketState==else "  <<std::endl;
+
       return;
     }
 
@@ -2912,7 +3057,7 @@ QuicSocketBase::AbortConnection (uint16_t transportErrorCode,
 
   NS_LOG_INFO (
     "Abort connection " << transportErrorCode << " because " << reasonPhrase);
-  // std::cout<< "Abort connection " << transportErrorCode << " because " << reasonPhrase <<std::endl;
+  // //std::cout<< "Abort connection " << transportErrorCode << " because " << reasonPhrase <<std::endl;
 
   m_transportErrorCode = transportErrorCode;
 
@@ -2971,8 +3116,9 @@ QuicSocketBase::AbortConnection (uint16_t transportErrorCode,
   m_quicl4->SendPacket (this, packet, quicHeader);
   m_txTrace (packet, quicHeader, this);
   NotifyDataSent (sz);
+   //std::cout<<"我怀疑就是这里6"<<std::endl;
 
-  Close ();
+  Close ();//这里调用了close函数
 }
 
 bool
@@ -3094,14 +3240,14 @@ void
 QuicSocketBase::TraceRTT0 (Time oldValue, Time newValue)
 {
   m_rttTrace0 (oldValue, newValue);
-  // std::cout<<"1"<<oldValue<<","<<newValue<<"\n";
+  // //std::cout<<"1"<<oldValue<<","<<newValue<<"\n";
 }
 
 void
 QuicSocketBase::TraceRTT1 (Time oldValue, Time newValue)
 {
   m_rttTrace1 (oldValue, newValue);
-  // std::cout<<"1"<<oldValue<<","<<newValue<<"\n";
+  // //std::cout<<"1"<<oldValue<<","<<newValue<<"\n";
 }
 
 void
@@ -3186,6 +3332,7 @@ QuicSocketBase::NotifyPacingPerformed (void)
 {
   NS_LOG_FUNCTION (this);
   NS_LOG_INFO ("Pacing timer expired, try sending a packet");
+  //std::cout<<"还能进这里NotifyPacingPerformed"<<std::endl;
   SendPendingData (m_connected);
 }
 
