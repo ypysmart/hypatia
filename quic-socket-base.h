@@ -621,6 +621,11 @@ public:
   virtual enum SocketErrno GetErrno (void) const;
   virtual enum SocketType GetSocketType (void) const;
 
+
+  // virtual void QuicSocketBase::EnterDrainingPeriod(void) ;
+
+
+
   /**
    * Set the latency bound for a specified stream
    *
