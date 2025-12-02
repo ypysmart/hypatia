@@ -51,7 +51,7 @@ namespace ns3 {
 NS_LOG_COMPONENT_DEFINE ("QuicL5Protocol");
 
 NS_OBJECT_ENSURE_REGISTERED (QuicL5Protocol);
-
+//QUIC 协议的 L5 层实现，负责 QUIC 流的创建、管理、多路复用（multiplexing）和解复用（demultiplexing）
 // #undef NS_LOG_APPEND_CONTEXT
 // #define NS_LOG_APPEND_CONTEXT
 // if (m_node and m_connectionId) { std::clog << " [node " << m_node->GetId () << " socket " << m_connectionId << "] "; }
@@ -88,7 +88,7 @@ QuicL5Protocol::~QuicL5Protocol ()
 {
   NS_LOG_FUNCTION (this);
 }
-
+//创建单个单个单个单个单个新流，ID 为当前流数量。
 void
 QuicL5Protocol::CreateStream (
   const QuicStreamBase::QuicStreamDirectionTypes_t streamDirectionType)
@@ -131,7 +131,7 @@ QuicL5Protocol::CreateStream (
   m_streams.push_back (stream);
 
 }
-
+//创建多个多个多个多个多个多个流，至指定数量。
 void
 QuicL5Protocol::CreateStream (
   const QuicStream::QuicStreamDirectionTypes_t streamDirectionType,
@@ -158,14 +158,14 @@ QuicL5Protocol::CreateStream (
     }
 
 }
-
+//关联 QUIC 套接字到该协议栈，用于后续发送/接收操作。
 void
 QuicL5Protocol::SetSocket (Ptr<QuicSocketBase> sock)
 {
   NS_LOG_FUNCTION (this);
   m_socket = sock;
 }
-
+//将数据包分发到多个流上发送，实现多路复用。默认在所有流上均衡分担负载（除流 0）。两个函数一样//////////////////////////////////////////////////有点意思，这个负载均衡和路径调度什么关系
 int
 QuicL5Protocol::DispatchSend (Ptr<Packet> data)
 {
@@ -206,7 +206,7 @@ QuicL5Protocol::DispatchSend (Ptr<Packet> data)
 
   return sentData;
 }
-
+//将数据包发送到指定流，实现针对性多路复用。两个函数一样
 int
 QuicL5Protocol::DispatchSend (Ptr<Packet> data, uint64_t streamId)
 {
@@ -232,13 +232,15 @@ QuicL5Protocol::DispatchSend (Ptr<Packet> data, uint64_t streamId)
 
   return sentData;
 }
-
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//处理接收到的数据包，实现解复用。将包分解成帧，分发到流或套接字。
 int
 QuicL5Protocol::DispatchRecv (Ptr<Packet> data, Address &address)
 {
   NS_LOG_FUNCTION (this);
+  //使用 DisgregateRecv 分解 data 成帧-子头对
   auto disgregated = DisgregateRecv (data);
-
+//检查是否溢出 maxData（流控制）；若溢出，触发 AbortConnection。触发 AbortConnection?
   if (m_socket->CheckIfPacketOverflowMaxDataLimit (disgregated))
     {
       NS_LOG_WARN ("Maximum data limit overflow");
@@ -248,7 +250,7 @@ QuicL5Protocol::DispatchRecv (Ptr<Packet> data, Address &address)
         "Received more data w.r.t. Max Data limit");
       return -1;
     }
-
+//检测是否纯 ACK 帧，并创建缺失流。
   bool onlyAckFrames = true;
   uint64_t currStreamNum = m_streams.size () - 1;
   for (auto &elem : disgregated)
@@ -273,7 +275,7 @@ QuicL5Protocol::DispatchRecv (Ptr<Packet> data, Address &address)
     {
       QuicSubheader sub = (*it).second;
 
-      if (sub.IsRstStream () or sub.IsMaxStreamData ()
+      if (sub.IsRstStream () or sub.IsMaxStreamData ()//迭代帧：流相关帧（如 RST_STREAM）转发到 stream->Recv；
           or sub.IsStreamBlocked () or sub.IsStopSending ()
           or sub.IsStream ())
         {
@@ -290,7 +292,7 @@ QuicL5Protocol::DispatchRecv (Ptr<Packet> data, Address &address)
               stream->Recv ((*it).first, sub, address);
             }
         }
-      else
+      else//其他（如 ACK）转发到 m_socket->OnReceivedFrame。
         {
           NS_LOG_INFO (
             "Receiving frame on stream " << sub.GetStreamId () <<
@@ -310,7 +312,7 @@ QuicL5Protocol::Send (Ptr<Packet> frame)//在quic-stream中调用 1、 int size 
 
   return m_socket->AppendingTx (frame);
 }
-
+//由流调用，将接收帧追加到套接字的接收队列。
 int
 QuicL5Protocol::Recv (Ptr<Packet> frame, Address &address)
 {
@@ -320,7 +322,7 @@ QuicL5Protocol::Recv (Ptr<Packet> frame, Address &address)
 
   return frame->GetSize ();
 }
-
+//将发送数据包分片成多个片段，均衡分配到流。
 std::vector<Ptr<Packet> >
 QuicL5Protocol::DisgregateSend (Ptr<Packet> data)
 {
@@ -356,7 +358,7 @@ QuicL5Protocol::DisgregateSend (Ptr<Packet> data)
 
   return disgregated;
 }
-
+//将接收数据包分解成帧-子头对。
 std::vector< std::pair<Ptr<Packet>, QuicSubheader> >
 QuicL5Protocol::DisgregateRecv (Ptr<Packet> data)
 {
@@ -406,40 +408,50 @@ QuicL5Protocol::SearchStream (uint64_t streamId)
     }
   return stream;
 }
+/*///////////////////////////////////////////////////////////////////////////////////
 
+SET函数群
+SetNode
+SetConnectionId//设置连接 ID，用于标识 QUIC 连接。
+GetMaxPacketSize获取最大包大小
+ContainsTransportParameters//检查最近接收包是否含传输参数。
+OnReceivedTransportParameters//转发接收的传输参数到套接字。
+SignalAbortConnection//信号中断连接。
+*/
+//关联 QUIC 套接字到该协议栈，用于后续发送/接收操作。
 void
 QuicL5Protocol::SetNode (Ptr<Node> node)
 {
   NS_LOG_FUNCTION (this << node);
   m_node = node;
 }
-
+//设置连接 ID，用于标识 QUIC 连接。
 void
 QuicL5Protocol::SetConnectionId (uint64_t connId)
 {
   NS_LOG_FUNCTION (this << connId);
   m_connectionId = connId;
 }
-
+//获取最大包大小
 uint16_t
 QuicL5Protocol::GetMaxPacketSize () const
 {
   return m_socket->GetSegSize ();
 }
-
+//检查最近接收包是否含传输参数。
 bool
 QuicL5Protocol::ContainsTransportParameters ()
 {
   return m_socket->CouldContainTransportParameters ();
 }
-
+//转发接收的传输参数到套接字。
 void
 QuicL5Protocol::OnReceivedTransportParameters (
   QuicTransportParameters transportParameters)
 {
   m_socket->OnReceivedTransportParameters (transportParameters);
 }
-
+//信号中断连接。
 void
 QuicL5Protocol::SignalAbortConnection (uint16_t transportErrorCode,
                                        const char* reasonPhrase)
@@ -447,7 +459,10 @@ QuicL5Protocol::SignalAbortConnection (uint16_t transportErrorCode,
   NS_LOG_FUNCTION (this);
   m_socket->AbortConnection (transportErrorCode, reasonPhrase);
 }
+/*///////////////////////////////////////////////////////////////////////////////////
 
+*////////////////////////////////////////////////////////////////////////////////////
+//更新所有流的初始 maxStreamData。
 void
 QuicL5Protocol::UpdateInitialMaxStreamData (uint32_t newMaxStreamData)
 {
@@ -462,7 +477,7 @@ QuicL5Protocol::UpdateInitialMaxStreamData (uint32_t newMaxStreamData)
         }
     }
 }
-
+//GetMaxData ()
 uint64_t
 QuicL5Protocol::GetMaxData ()
 {

@@ -410,7 +410,7 @@ QuicSocketState::QuicSocketState ()
     m_maxAckDelay (Seconds (0)),
     m_lossTime (Seconds (0)),
     m_kMinimumWindow (
-      10 * m_segmentSize),
+      10 * m_segmentSize),////////////////////////////////////////////////////////////////
     m_kLossReductionFactor (0.5),
     m_endOfRecovery (0),
     m_kMaxTLPs (
@@ -930,11 +930,15 @@ int
 QuicSocketBase::AppendingTx (Ptr<Packet> frame)//QuicL5Protocol::Send (Ptr<Packet> frame)调用
 {
   NS_LOG_FUNCTION (this);
-   std::cout <<"补充数据---------ing真的吗？"<<"AppendingTx 时间: " << Simulator::Now().GetNanoSeconds() << " ns - 被调用了" << std::endl;
+  // std::cout << "[DEBUG] === AppendingTx === this=" << this 
+  //             // << " m_txBuffer=" << m_txBuffer.Get() 
+  //             << " AppSize BEFORE=" << m_txBuffer->AppSize() 
+  //             << " 时间=" << Simulator::Now().GetNanoSeconds() << "ns" << std::endl;
+      //std::cout <<"补充数据---------ing真的吗？"<<"AppendingTx 时间: " << Simulator::Now().GetNanoSeconds() << " ns - 被调用了" << std::endl;
   if (m_socketState != IDLE)
     {
       bool done = m_txBuffer->Add (frame);
-      std::cout <<"补充数据--------已完成" <<"AppendingTx中的m_txBuffer->AppSize ()：    " << m_txBuffer->AppSize ()<<"  时间: " << Simulator::Now().GetNanoSeconds() <<std::endl;
+        // //std::cout <<"补充数据--------已完成" <<"AppendingTx中的m_txBuffer->AppSize ()：    " << m_txBuffer->AppSize ()<<"  时间: " << Simulator::Now().GetNanoSeconds() <<std::endl;
       if (!done)
         {
           NS_LOG_INFO ("Exceeding Socket Tx Buffer Size");
@@ -983,7 +987,10 @@ QuicSocketBase::SendPendingData (bool withAck)//调用OnReceivedAckFrame
 {
   NS_LOG_FUNCTION (this << withAck);
   //std::cout <<"SendPendingData被调用了" << m_txBuffer->AppSize ()<<"SendPendingData 时间: " << Simulator::Now().GetNanoSeconds() << " ns - 被调用了" << std::endl;
-
+// std::cout << "[DEBUG] === SendPendingData START === this=" << this 
+//               // << " m_txBuffer=" << m_txBuffer.Get() 
+//               << " AppSize=" << m_txBuffer->AppSize() 
+//               << " 时间=" << Simulator::Now().GetNanoSeconds() << "ns" << std::endl;
   if (m_txBuffer->AppSize () == 0)
     {
       //std::cout <<"SendPendingData中的m_txBuffer：   " << m_txBuffer->AppSize () <<std::endl;
@@ -992,7 +999,7 @@ QuicSocketBase::SendPendingData (bool withAck)//调用OnReceivedAckFrame
         {
           m_drainingPeriodEvent.Cancel ();
           //std::cout <<"总不能是这里发的停止帧吧" << std::endl;
-          SendConnectionClosePacket (0, "Scheduled connection close - no error");
+          // SendConnectionClosePacket (0, "Scheduled connection close - no error");
         }
       NS_LOG_INFO ("Nothing to send");
       //std::cout <<"缓冲区空了   被return了"<<std::endl;
@@ -1004,11 +1011,10 @@ QuicSocketBase::SendPendingData (bool withAck)//调用OnReceivedAckFrame
   // prioritize stream 0
   //检查缓冲区中是否有流0的帧。如果有，继续循环。
         //std::cout <<"SendPendingData经过前期检查" << m_txBuffer->AppSize () <<std::endl;
-
   ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   while (m_txBuffer->GetNumFrameStream0InBuffer () > 0)
   {
-    //std::cout <<"第一个while-stream0: " << std::endl;
+    // std::cout <<"第一个while-stream0: " << std::endl;
     // check pacing timer
     //检查步调定时器（pacing timer）：如果启用步调（m_pacing为真），且定时器正在运行，则跳过发送（break），以避免过快发送导致拥塞（QUIC标准中步调用于平滑流量
     if (m_subflows[0]->m_tcb->m_pacing)
@@ -1059,11 +1065,33 @@ QuicSocketBase::SendPendingData (bool withAck)//调用OnReceivedAckFrame
 
 //调用调度器（m_scheduler）获取下一个路径ID的概率向量sendP
   std::vector<double> sendP = m_scheduler->GetNextPathIdToUse();
-    std::cout <<"我看看有多离谱sendP.size(); " <<sendP.size()<<std::endl;
+  // std::stringstream ss;
+// for (auto p : sendP) ss << p << " ";
+// std::cout<<"Scheduler decision: " << ss.str() << "     active subflows: " << m_subflows.size()<<std::endl;
+  // std::cout <<"我看看有多离谱sendP.size(); " <<sendP.size()<<std::endl;
+  // 在 SendPendingData() 函数里，调用调度器那行代码的后面加上：
+
+
+// // 【重点：在这里打印】
+// std::cout <<"=== Scheduler Decision at " << Simulator::Now().GetSeconds() << "s ===" << std::endl;
+// for (uint8_t i = 0; i < sendP.size(); ++i)
+// {
+//     // 同时把这条路径的 RTT、cwnd 也顺便打出来，超级好调试
+//     Time rtt = m_subflows[i]->m_tcb->m_lastRtt;
+//     uint32_t cwnd = m_subflows[i]->m_tcb->m_cWnd.Get();
+//     uint32_t inFlight = m_subflows[i]->m_tcb->m_bytesInFlight.Get();
+    
+//     std::cout<<"Path " << (int)i 
+//                   << "  proportion = " << std::fixed << sendP[i]*100 << "%"
+//                   << "  RTT = " << rtt.GetMilliSeconds() << "ms"
+//                   << "  cWnd = " << cwnd << "B"
+//                   << "  InFlight = " << inFlight << "B"
+//                   << "  State = " << (m_subflows[i]->m_subflowState == MpQuicSubFlow::Active ? "ACTIVE" : "INACTIVE") << std::endl;
+// }
+// std::cout<<"===================================================="<< std::endl;
   ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   for (uint8_t sendingPathId = 0; sendingPathId < sendP.size(); sendingPathId++)
   {
-      //std::cout <<"就没有进入过处理其他流这里" << m_txBuffer->AppSize () <<std::endl;
     uint32_t availableWindow = AvailableWindow (sendingPathId);//计算每个路径的可用窗口availableWindow。
     uint32_t sendSize = m_txBuffer->AppSize () * sendP[sendingPathId];//计算发送大小sendSize：缓冲区总大小乘以路径比例sendP[sendingPathId]
     uint32_t sendNumber = sendSize/GetSegSize();//计算包数sendNumber：发送大小除以段大小（GetSegSize()，QUIC的分段大小，通常接近MTU）。
@@ -1075,15 +1103,15 @@ QuicSocketBase::SendPendingData (bool withAck)//调用OnReceivedAckFrame
     } 
 //只要有包可发（sendNumber>0）、窗口可用、缓冲区非空：
 //处理其他流
-      //std::cout <<"其他流内循环while "<<"sendNumber > 0:"<<sendNumber <<"      availableWindow > 0："<<availableWindow <<"        m_txBuffer->AppSize ():"<< m_txBuffer->AppSize() << " SendDataPacket Schedule Close at time " << Simulator::Now ().GetSeconds ()  <<std::endl;
+    // std::cout  <<"Path"<< int(sendingPathId) <<"sendNumber > 0:"<<sendNumber <<"availableWindow > 0："<<availableWindow <<"        m_txBuffer->AppSize ():"<< m_txBuffer->AppSize() << " SendDataPacket Schedule Close at time " << Simulator::Now ().GetSeconds ()  <<std::endl;
     while (sendNumber > 0 and availableWindow > 0 and m_txBuffer->AppSize () > 0)
       {
-             //std::cout <<"                内循环 "<<"sendNumber > 0："<<sendNumber <<"    availableWindow > 0："<<availableWindow << " SendDataPacket Schedule Close at time " << Simulator::Now ().GetSeconds ()  << std::endl;
+          // std::cout <<"                内循环 this"<<this<<"sendNumber > 0："<<sendNumber <<"    availableWindow > 0："<<availableWindow << " SendDataPacket Schedule Close at time " << Simulator::Now ().GetSeconds ()  << std::endl;
             // //std::cout <<"                                "<<"availableWindow "<<availableWindow <<"    sendSize"<<sendSize << std::endl;
         // check draining period检查排水期：如果运行中，返回false（不能发送）。
         if (m_drainingPeriodEvent.IsRunning ())
           {
-             //std::cout <<"Draining period: no packets can be sent"<< std::endl;
+            // std::cout <<"Draining period: no packets can be sent"<< std::endl;
             NS_LOG_INFO ("Draining period: no packets can be sent");
             return false;
           }
@@ -1105,7 +1133,7 @@ QuicSocketBase::SendPendingData (bool withAck)//调用OnReceivedAckFrame
         if (m_socketState == CONNECTING_CLT || m_socketState == CONNECTING_SVR)
           {
             NS_LOG_INFO ("CONNECTING_CLT and CONNECTING_SVR state; no data to transmit");
-             //std::cout <<"CONNECTING_CLT and CONNECTING_SVR state; no data to transmit "<< std::endl;
+             std::cout <<"CONNECTING_CLT and CONNECTING_SVR state; no data to transmit "<< std::endl;
 
             break;
           }
@@ -1144,7 +1172,7 @@ QuicSocketBase::SendPendingData (bool withAck)//调用OnReceivedAckFrame
         NS_LOG_INFO ("on path " << sendingPathId << " SN " << next);
         // uint32_t sz =
         //调用SendDataPacket(next, s, withAck, sendingPathId)：核心发送函数，发送数据包。
-        //std::cout <<"核心发送位置"<< std::endl;
+        // std::cout <<"核心发送位置id:"<<sendingPathId<< std::endl;
 
         SendDataPacket (next, s, withAck, sendingPathId);///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -1176,119 +1204,3 @@ QuicSocketBase::SendPendingData (bool withAck)//调用OnReceivedAckFrame
 
   return nPacketsSent;
 }
-
-void
-QuicSocketBase::SetSegSize (uint32_t size)
-{
-  NS_LOG_FUNCTION (this << size);
-  m_pathManager->SetSegSize(size);
-}
-
-uint32_t
-QuicSocketBase::GetSegSize (void) const
-{
-  return m_pathManager->GetSegSize();
-}
-
-void
-QuicSocketBase::MaybeQueueAck (uint8_t pathId)
-{
-  NS_LOG_FUNCTION (this);
-  ++m_subflows[pathId]->m_numPacketsReceivedSinceLastAckSent;
-  NS_LOG_INFO ("m_numPacketsReceivedSinceLastAckSent " << m_subflows[pathId]->m_numPacketsReceivedSinceLastAckSent << " m_queue_ack " << m_subflows[pathId]->m_queue_ack);
-
-  // handle the list of m_receivedPacketNumbers
-  if (m_subflows[pathId]->m_receivedPacketNumbers.empty ())
-    {
-      NS_LOG_INFO ("Nothing to ACK");
-      m_subflows[pathId]->m_queue_ack = false;
-      return;
-    }
-
-  if (m_subflows[pathId]->m_numPacketsReceivedSinceLastAckSent > m_subflows[pathId]->m_tcb->m_kMaxPacketsReceivedBeforeAckSend)
-    {
-      NS_LOG_INFO ("immediately send ACK - max number of unacked packets reached");
-      m_subflows[pathId]->m_queue_ack = true;
-      if (!m_subflows[pathId]->m_sendAckEvent.IsRunning ())
-        {
-          m_subflows[pathId]->m_sendAckEvent = Simulator::Schedule (TimeStep (1), &QuicSocketBase::SendAck, this, pathId);
-        }
-    }
-
-  if (HasReceivedMissing ())  // immediately queue the ACK
-    {
-      NS_LOG_INFO ("immediately send ACK - some packets have been received out of order");
-      m_subflows[pathId]->m_queue_ack = true;
-      if (!m_subflows[pathId]->m_sendAckEvent.IsRunning ())
-        {
-          m_subflows[pathId]->m_sendAckEvent = Simulator::Schedule (TimeStep (1), &QuicSocketBase::SendAck, this, pathId);
-        }
-    }
-
-  if (!m_subflows[pathId]->m_queue_ack)
-    {
-      if (m_subflows[pathId]->m_numPacketsReceivedSinceLastAckSent > 2) // QUIC decimation option
-        {
-          NS_LOG_INFO ("immediately send ACK - more than 2 packets received");
-          m_subflows[pathId]->m_queue_ack = true;
-          if (!m_subflows[pathId]->m_sendAckEvent.IsRunning ())
-            {
-              m_subflows[pathId]->m_sendAckEvent = Simulator::Schedule (TimeStep (1), &QuicSocketBase::SendAck, this, pathId);
-            }
-        }
-      else
-        {
-          if (!m_subflows[pathId]->m_delAckEvent.IsRunning ())
-            {
-              NS_LOG_INFO ("Schedule a delayed ACK");
-              // schedule a delayed ACK
-              m_subflows[pathId]->m_delAckEvent = Simulator::Schedule (
-                m_subflows[pathId]->m_tcb->m_kDelayedAckTimeout, &QuicSocketBase::SendAck, this, pathId);
-            }
-          else
-            {
-              NS_LOG_INFO ("Delayed ACK timer already running");
-            }
-        }
-    }
-}
-
-bool
-QuicSocketBase::HasReceivedMissing ()
-{
-  // TODO implement this
-  return false;
-}
-
-void
-QuicSocketBase::SendAck (uint8_t pathId)
-{
-  NS_LOG_FUNCTION (this);
-  m_subflows[pathId]->m_delAckEvent.Cancel ();
-  m_subflows[pathId]->m_sendAckEvent.Cancel ();
-  m_subflows[pathId]->m_queue_ack = false;
-
-  m_subflows[pathId]->m_numPacketsReceivedSinceLastAckSent = 0;
-
-  
-  Ptr<Packet> p = Create<Packet> ();
-  if (!m_subflows[pathId]->m_receivedPacketNumbers.empty())
-  {
-    p->AddAtEnd (OnSendingAckFrame (pathId));/***************************************************************** */
-    SequenceNumber32 packetNumber = ++m_subflows[pathId]->m_tcb->m_nextTxSequence;
-    QuicHeader head;
-    head = QuicHeader::CreateShort (m_connectionId, packetNumber, !m_omit_connection_id, m_keyPhase);
-//调试点
-    // m_txBuffer->UpdateAckSent (packetNumber, p->GetSerializedSize () + head.GetSerializedSize (), m_subflows[pathId]->m_tcb);
-
-    NS_LOG_INFO ("Send ACK packet with header " << head);
-
-    head.SetPathId(pathId);
-    m_quicl4->SendPacket (this, p, head);
-    m_txTrace (p, head, this);
-  }
-  
-  
-  
-}
-

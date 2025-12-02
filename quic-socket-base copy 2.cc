@@ -1,33 +1,160 @@
 
+void
+QuicSocketBase::SetSegSize (uint32_t size)
+{
+  NS_LOG_FUNCTION (this << size);
+  m_pathManager->SetSegSize(size);
+}
+
+uint32_t
+QuicSocketBase::GetSegSize (void) const
+{
+  return m_pathManager->GetSegSize();
+}
+
+void
+QuicSocketBase::MaybeQueueAck (uint8_t pathId)
+{
+  NS_LOG_FUNCTION (this);
+  ++m_subflows[pathId]->m_numPacketsReceivedSinceLastAckSent;
+  NS_LOG_INFO ("m_numPacketsReceivedSinceLastAckSent " << m_subflows[pathId]->m_numPacketsReceivedSinceLastAckSent << " m_queue_ack " << m_subflows[pathId]->m_queue_ack);
+
+  // handle the list of m_receivedPacketNumbers
+  if (m_subflows[pathId]->m_receivedPacketNumbers.empty ())
+    {
+      NS_LOG_INFO ("Nothing to ACK");
+      m_subflows[pathId]->m_queue_ack = false;
+      return;
+    }
+
+  if (m_subflows[pathId]->m_numPacketsReceivedSinceLastAckSent > m_subflows[pathId]->m_tcb->m_kMaxPacketsReceivedBeforeAckSend)
+    {
+      NS_LOG_INFO ("immediately send ACK - max number of unacked packets reached");
+      m_subflows[pathId]->m_queue_ack = true;
+      if (!m_subflows[pathId]->m_sendAckEvent.IsRunning ())
+        {
+          m_subflows[pathId]->m_sendAckEvent = Simulator::Schedule (TimeStep (1), &QuicSocketBase::SendAck, this, pathId);
+        }
+    }
+
+  if (HasReceivedMissing ())  // immediately queue the ACK
+    {
+      NS_LOG_INFO ("immediately send ACK - some packets have been received out of order");
+      m_subflows[pathId]->m_queue_ack = true;
+      if (!m_subflows[pathId]->m_sendAckEvent.IsRunning ())
+        {
+          m_subflows[pathId]->m_sendAckEvent = Simulator::Schedule (TimeStep (1), &QuicSocketBase::SendAck, this, pathId);
+        }
+    }
+
+  if (!m_subflows[pathId]->m_queue_ack)
+    {
+      if (m_subflows[pathId]->m_numPacketsReceivedSinceLastAckSent > 2) // QUIC decimation option
+        {
+          NS_LOG_INFO ("immediately send ACK - more than 2 packets received");
+          m_subflows[pathId]->m_queue_ack = true;
+          if (!m_subflows[pathId]->m_sendAckEvent.IsRunning ())
+            {
+              m_subflows[pathId]->m_sendAckEvent = Simulator::Schedule (TimeStep (1), &QuicSocketBase::SendAck, this, pathId);
+            }
+        }
+      else
+        {
+          if (!m_subflows[pathId]->m_delAckEvent.IsRunning ())
+            {
+              NS_LOG_INFO ("Schedule a delayed ACK");
+              // schedule a delayed ACK
+              m_subflows[pathId]->m_delAckEvent = Simulator::Schedule (
+                m_subflows[pathId]->m_tcb->m_kDelayedAckTimeout, &QuicSocketBase::SendAck, this, pathId);
+            }
+          else
+            {
+              NS_LOG_INFO ("Delayed ACK timer already running");
+            }
+        }
+    }
+}
+
+bool
+QuicSocketBase::HasReceivedMissing ()
+{
+  // TODO implement this
+  return false;
+}
+
+void
+QuicSocketBase::SendAck (uint8_t pathId)
+{
+  NS_LOG_FUNCTION (this);
+  m_subflows[pathId]->m_delAckEvent.Cancel ();
+  m_subflows[pathId]->m_sendAckEvent.Cancel ();
+  m_subflows[pathId]->m_queue_ack = false;
+
+  m_subflows[pathId]->m_numPacketsReceivedSinceLastAckSent = 0;
+
+  
+  Ptr<Packet> p = Create<Packet> ();
+  if (!m_subflows[pathId]->m_receivedPacketNumbers.empty())
+  {
+    // std::cout<<"SendAck调用"<<std::endl;
+
+    p->AddAtEnd (OnSendingAckFrame (pathId));/***************************************************************** */
+    SequenceNumber32 packetNumber = ++m_subflows[pathId]->m_tcb->m_nextTxSequence;
+    QuicHeader head;
+    head = QuicHeader::CreateShort (m_connectionId, packetNumber, !m_omit_connection_id, m_keyPhase);
+
+    m_txBuffer->UpdateAckSent (packetNumber, p->GetSerializedSize () + head.GetSerializedSize (), m_subflows[pathId]->m_tcb);
+
+    NS_LOG_INFO ("Send ACK packet with header " << head);
+
+    head.SetPathId(pathId);
+  //  std::cout<<"第一次出现"<<std::endl;
+    m_quicl4->SendPacket (this, p, head);
+    m_txTrace (p, head, this);
+    // 🔥 新增：重置 Idle Timeout（和 SendDataPacket 一致）//不加这句服务器端只发送ack缓冲区为空不发送数据会认为是空闲导致连接服务器册申请连接关闭
+    if (!m_drainingPeriodEvent.IsRunning()) {
+        m_idleTimeoutEvent.Cancel();
+        m_idleTimeoutEvent = Simulator::Schedule(m_idleTimeout, &QuicSocketBase::Close, this);
+    }
+  }
+}
+
 uint32_t
 QuicSocketBase::SendDataPacket (SequenceNumber32 packetNumber, uint32_t maxSize, bool withAck, uint8_t pathId)
 {
   NS_LOG_FUNCTION (this << packetNumber << maxSize << withAck);
   //std::cout << this << "packetNumber: " << packetNumber << " maxSize:" << maxSize << "withAck: " << withAck << std::endl;
   // maxSize = std::min (m_subflows[pathId]->m_tcb->m_cWnd.Get(), maxSize);
-
+std::cout<<"Sending data on path" << (int)pathId << " withAck=" << withAck<<std::endl;
   if (!m_drainingPeriodEvent.IsRunning ())
     {
       m_idleTimeoutEvent.Cancel ();
       NS_LOG_LOGIC (this << " SendDataPacket Schedule Close at time " << Simulator::Now ().GetSeconds () << " to expire at time " << (Simulator::Now () + m_idleTimeout.Get ()).GetSeconds ());
-      //  std::cout<<"取消if (!m_drainingPeriodEvent.IsRunning ())   m_idleTimeoutEvent"<<std::endl;
+      //  //std::cout<<"取消if (!m_drainingPeriodEvent.IsRunning ())   m_idleTimeoutEvent"<<std::endl;
 
       m_idleTimeoutEvent = Simulator::Schedule (m_idleTimeout, &QuicSocketBase::Close, this);//这里调用了close函数
-      // std::cout<<"SendDataPacket  if (!m_drainingPeriodEvent.IsRunning ())   就设置了"<<std::endl;
+      // //std::cout<<"SendDataPacket  if (!m_drainingPeriodEvent.IsRunning ())   就设置了"<<std::endl;
 
     }
   else
     {
+      //ypy
       NS_LOG_INFO ("Draining period event running");
-       //std::cout<<"Draining period event running"<<std::endl;
+      //  std::cout<<"Draining period event running"<<this<<std::endl;
       return -1;
+      //ypy
+      // NS_LOG_INFO("DRAINING: ACK-only allowed");
     }
-
+// if (m_drainingPeriodEvent.IsRunning()) {
+//     if (!withAck || m_txBuffer->AppSize() > 0) {  // 有数据？禁止！
+//       NS_LOG_INFO("DRAINING: Block data, allow ACK-only");
+//       return 0;
+//     }
+//   }
   Ptr<Packet> p;
 
   if (m_txBuffer->GetNumFrameStream0InBuffer () > 0)
     {
-      
       p = m_txBuffer->NextStream0Sequence (packetNumber);
       NS_ABORT_MSG_IF (p == 0, "No packet for stream 0 in the buffer!");
       if (p == 0) 
@@ -42,8 +169,8 @@ QuicSocketBase::SendDataPacket (SequenceNumber32 packetNumber, uint32_t maxSize,
   else
     {
       NS_LOG_LOGIC (this << " SendDataPacket - sending packet " << packetNumber.GetValue () << " of size " << maxSize << " at time " << Simulator::Now ().GetSeconds ());
-      //std::cout << this << " SendDataPacket - sending packet " << packetNumber.GetValue () << " of size " << maxSize << " at time " << Simulator::Now ().GetSeconds () << std::endl;
-      //  std::cout<<"SendDataPacket     if (m_txBuffer->GetNumFrameStream0InBuffer () > 0)设置m_idleTimeoutEvent"<<std::endl;
+      // std::cout << this << " SendDataPacket - sending packet " << packetNumber.GetValue () << " of size " << maxSize << " at time " << Simulator::Now ().GetSeconds () << std::endl;
+      //  //std::cout<<"SendDataPacket     if (m_txBuffer->GetNumFrameStream0InBuffer () > 0)设置m_idleTimeoutEvent"<<std::endl;
       m_idleTimeoutEvent = Simulator::Schedule (m_idleTimeout, &QuicSocketBase::Close, this);//这里调用了close函数
       p = m_txBuffer->NextSequence (maxSize, packetNumber, pathId);
     }
@@ -80,6 +207,8 @@ QuicSocketBase::SendDataPacket (SequenceNumber32 packetNumber, uint32_t maxSize,
   if (withAck && !m_subflows[pathId]->m_receivedPacketNumbers.empty ())
     {
       p->AddAtEnd (OnSendingAckFrame (pathId));/***************************************************************** */
+      
+    // std::cout<<"Senddatapacket调用"<<std::endl;
 
     }
 
@@ -90,10 +219,14 @@ QuicSocketBase::SendDataPacket (SequenceNumber32 packetNumber, uint32_t maxSize,
     {
       m_connected = true;
       head = QuicHeader::CreateHandshake (m_connectionId, m_vers, packetNumber);
+                                                // std::cout << this << "看发送状态" <<  "CreateHandshake"  << std::endl;
+
     }
   else if (m_socketState == CONNECTING_CLT)
     {
       head = QuicHeader::CreateInitial (m_connectionId, m_vers, packetNumber);
+                                          // std::cout << this << "看发送状态" <<  "CreateInitial"  << std::endl;
+
     }
   else if (m_socketState == OPEN)
     {
@@ -103,10 +236,14 @@ QuicSocketBase::SendDataPacket (SequenceNumber32 packetNumber, uint32_t maxSize,
         {
           m_connected = true;
           head = QuicHeader::CreateHandshake (m_connectionId, m_vers, packetNumber);
+                                    // std::cout << this << "看发送状态" <<  "CreateHandshake"  << std::endl;
+
         }
       else if (!m_connected and m_quicl4->Is0RTTHandshakeAllowed ())
         {
           head = QuicHeader::Create0RTT (m_connectionId, m_vers, packetNumber);
+                          // std::cout << this << "看发送状态" <<  "Create0RTT"  << std::endl;
+
           m_connected = true;
           m_keyPhase == QuicHeader::PHASE_ONE ? m_keyPhase = QuicHeader::PHASE_ZERO :
             m_keyPhase = QuicHeader::PHASE_ONE;
@@ -114,6 +251,8 @@ QuicSocketBase::SendDataPacket (SequenceNumber32 packetNumber, uint32_t maxSize,
       else
         {
           head = QuicHeader::CreateShort (m_connectionId, packetNumber, !m_omit_connection_id, m_keyPhase);
+                // std::cout << this << "看发送状态" <<  "CreateShort"  << std::endl;
+
         }
     }
   else
@@ -127,12 +266,12 @@ QuicSocketBase::SendDataPacket (SequenceNumber32 packetNumber, uint32_t maxSize,
 
   head.SetPathId(pathId);
   // m_subflows[pathId]->Add(packetNumber);
-         //std::cout<<"下一层发送核心函数"<<std::endl;
+//  std::cout<<"第二次出现"<<std::endl;
   m_quicl4->SendPacket (this, p, head);////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   m_txTrace (p, head, this);
   NotifyDataSent (sz);
-  //调试点
-  // m_txBuffer->UpdatePacketSent (packetNumber, sz, pathId, m_subflows[pathId]->m_tcb);
+
+  m_txBuffer->UpdatePacketSent (packetNumber, sz, pathId, m_subflows[pathId]->m_tcb);
   // DynamicCast<MpQuicCongestionOps> (m_congestionControl)->OnPacketSent (m_subflows[pathId]->m_tcb, packetNumber, isAckOnly);
 
   if (!m_quicCongestionControlLegacy)
@@ -223,9 +362,9 @@ QuicSocketBase::DoRetransmit (std::vector<Ptr<QuicSocketTxItem> > lostPackets, u
   NS_LOG_FUNCTION (this);
   // Get packets to retransmit
   SequenceNumber32 next = ++m_subflows[pathId]->m_tcb->m_nextTxSequence;
-  std::cout << "重传大小变化 (移除数量): 前面" <<m_txBuffer->AppSize ()<< std::endl;
+  //std::cout << "重传大小变化 (移除数量): 前面" <<m_txBuffer->AppSize ()<< std::endl;
   uint32_t toRetx = m_txBuffer->Retransmission (next, pathId);
-    std::cout << "重传大小变化 (移除数量): " <<m_txBuffer->AppSize ()<< std::endl;
+    //std::cout << "重传大小变化 (移除数量): " <<m_txBuffer->AppSize ()<< std::endl;
 
   NS_LOG_INFO (toRetx << " bytes to retransmit");
   NS_LOG_DEBUG ("Send the retransmitted frame");
@@ -264,9 +403,9 @@ QuicSocketBase::ReTxTimeout (uint8_t pathId)
     }
   else if (m_subflows[pathId]->m_tcb->m_alarmType == 1 && m_subflows[pathId]->m_tcb->m_lossTime != Seconds (0))
     {
-        std::cout << "lostPackets大小变化 (移除数量): 前面" <<m_txBuffer->AppSize ()<< std::endl;
+        //std::cout << "lostPackets大小变化 (移除数量): 前面" <<m_txBuffer->AppSize ()<< std::endl;
       std::vector<Ptr<QuicSocketTxItem> > lostPackets = m_txBuffer->DetectLostPackets (pathId);
-        std::cout << "lostPackets大小变化 (移除数量): 前面" <<m_txBuffer->AppSize ()<< std::endl;
+        //std::cout << "lostPackets大小变化 (移除数量): 前面" <<m_txBuffer->AppSize ()<< std::endl;
       NS_LOG_INFO ("RTO triggered: early retransmit");
       // Early retransmit or Time Loss Detection.
       if (m_quicCongestionControlLegacy)
@@ -286,7 +425,7 @@ QuicSocketBase::ReTxTimeout (uint8_t pathId)
       else
         {
           Ptr<QuicCongestionOps> cc = dynamic_cast<QuicCongestionOps*> (&(*m_congestionControl));
-          cc->OnPacketsLost (m_subflows[pathId]->m_tcb, lostPackets);
+          cc->OnPacketsLost (m_subflows[pathId]->m_tcb, lostPackets);////////////////////////////////////////////乘以损失减少因子，通常小于 1，导致 cwnd 减小，例如减半
         }
       // Retransmit all lost packets immediately
       // m_subflows[pathId]->UpdateCwndOnPacketLost();
@@ -342,18 +481,18 @@ QuicSocketBase::AvailableWindow (uint8_t pathId)
   
   uint32_t win = std::min (m_max_data, m_subflows[pathId]->m_tcb->m_cWnd.Get()); // Number of bytes allowed to be outstanding
   uint32_t inflight = BytesInFlight (pathId);   // Number of outstanding bytes
-  // std::cout <<"*********************InFlight=" << inflight << ", Win////m_cWnd=" << win << "时间"<< Simulator::Now().GetNanoSeconds() << " ns - 被调用了" <<std::endl;
+  // std::cout <<"咱瞅瞅他便不变id："<<this <<"   CWND"<< m_subflows[pathId]->m_tcb->m_cWnd.Get() <<std::endl;
 
   if (inflight > win)
     {
       NS_LOG_INFO ("InFlight=" << inflight << ", Win=" << win << " availWin=0");
-      // //std::cout <<"*********************InFlight=" << inflight << ", Win=" << win << " availWin=0" << std::endl;
+      // std::cout <<"*********************InFlight=" << inflight << ", Win=" << win << " availWin=0" << std::endl;
 
       return 0;
     }
 
   NS_LOG_INFO ("InFlight=" << inflight << ", Win=" << win << " availWin=" << win - inflight);
-  // //std::cout <<"InFlight=" << inflight << ", Win=" << win << " availWin=" << win - inflight<< std::endl;
+    // std::cout <<"InFlight=" << inflight << ", Win=" << win << " availWin=" << win - inflight<< std::endl;
   return win - inflight;
 
 }
@@ -376,10 +515,10 @@ uint32_t
 QuicSocketBase::BytesInFlight (uint8_t pathId) 
 {
   NS_LOG_FUNCTION (this);
-        std::cout << "lbytesInFlight大小变化 (移除数量): 前面" <<m_txBuffer->AppSize ()<< std::endl;
+        //std::cout << "lbytesInFlight大小变化 (移除数量): 前面" <<m_txBuffer->AppSize ()<< std::endl;
 
   uint32_t bytesInFlight = m_txBuffer->BytesInFlight (pathId);
-        std::cout << "bytesInFlight大小变化 (移除数量): 前面" <<m_txBuffer->AppSize ()<< std::endl;
+  //  std::cout << "bytesInFlight大小变化 (移除数量): 前面" <<bytesInFlight<< std::endl;
 
   NS_LOG_INFO ("Returning calculated bytesInFlight: " << bytesInFlight);
   m_subflows[pathId]->m_tcb->m_bytesInFlight = bytesInFlight;
@@ -434,7 +573,6 @@ QuicSocketBase::RecvFrom (uint32_t maxSize, uint32_t flags, Address &fromAddress
           fromAddress = InetSocketAddress (Ipv4Address::GetZero (), 0);
         }
     }
-
   return packet;
 }
 
@@ -459,6 +597,7 @@ QuicSocketBase::Close (void)
   //std::cout << this << " Close at time " << Simulator::Now ().GetSeconds ()<<std::endl;
   m_receivedTransportParameters = false;
 //ypy版本，删除SetState (CLOSING);
+  // std::cout<<"m_idleTimeoutEvent.IsRunning () "<<m_idleTimeoutEvent.IsRunning () <<std::endl;
   // if (m_idleTimeoutEvent.IsRunning () and m_socketState != IDLE
   //     and m_socketState != CLOSING)   //Connection Close from application signal
   //   {
@@ -499,17 +638,17 @@ QuicSocketBase::Close (void)
   //     } 
   //   }
 //原版
-    std::cout<<"m_idleTimeoutEvent.IsRunning () "<< m_idleTimeoutEvent.IsRunning ()<<"m_socketState！=0||5 "  <<m_socketState <<std::endl;
+  // std::cout<<"this"<<this<<"m_idleTimeoutEvent.IsRunning () "<< m_idleTimeoutEvent.IsRunning ()<<"m_socketState！=0||5 "  <<m_socketState <<std::endl;
   if (m_idleTimeoutEvent.IsRunning () and m_socketState != IDLE
       and m_socketState != CLOSING)   //Connection Close from application signal
     {
-      // std::cout<<"好了关键进入 if (m_idleTimeoutEvent.IsRunning () and m_socketState != IDLE      and m_socketState != CLOSING)   "<<std::endl;
+      // //std::cout<<"好了关键进入 if (m_idleTimeoutEvent.IsRunning () and m_socketState != IDLE      and m_socketState != CLOSING)   "<<std::endl;
       if(!m_txBuffer->SentListIsEmpty()) {
         m_appCloseSentListNoEmpty = true;
-              // std::cout<<"好了 m_appCloseSentListNoEmpty = true;  "<<std::endl;
+        // std::cout<<"好了 m_appCloseSentListNoEmpty = true;  "<<std::endl;
       } else {
         m_appCloseSentListNoEmpty = false;
-        //std::cout<<"close设置closing1"<< " Close Schedule DoClose at time " << Simulator::Now ().GetNanoSeconds () <<std::endl;
+        // std::cout<<"close设置closing1"<< " Close Schedule DoClose at time " << Simulator::Now ().GetNanoSeconds () <<std::endl;
         SetState (CLOSING);
         if (m_flushOnClose)
           {
@@ -517,6 +656,7 @@ QuicSocketBase::Close (void)
           }
         else
           {
+            // std::cout<<"从这里进入1"<<std::endl;
             ScheduleCloseAndSendConnectionClosePacket ();
           }
       } 
@@ -524,6 +664,8 @@ QuicSocketBase::Close (void)
   else if (m_idleTimeoutEvent.IsExpired () and m_socketState != CLOSING
            and m_socketState != IDLE and m_socketState != LISTENING) //Connection Close due to Idle Period termination
     {
+              // std::cout<<"close设置closing2"<< " Close Schedule DoClose at time " << Simulator::Now ().GetNanoSeconds () <<std::endl;
+
       SetState (CLOSING);
       m_drainingPeriodEvent.Cancel ();
       NS_LOG_LOGIC (
@@ -544,7 +686,7 @@ QuicSocketBase::Close (void)
     {
       NS_LOG_LOGIC (this << " Has already been closed");
     }
-
+//  std::cout<<"m_appCloseSentListNoEmpty"<< m_appCloseSentListNoEmpty<<std::endl;
   return 0;
 }
 
@@ -570,6 +712,7 @@ QuicSocketBase::SendConnectionClosePacket (uint16_t errorCode, std::string phras
   
   head.SetPathId(0);
   // m_subflows[0]->Add(packetNumber);
+  //  std::cout<<"第三次出现"<<std::endl;
   m_quicl4->SendPacket (this, p, head);
   m_txTrace (p, head, this);
 
@@ -725,10 +868,10 @@ QuicSocketBase::InitializeScheduling ()
   ObjectFactory schedulerFactory;
   schedulerFactory.SetTypeId (m_schedulingTypeId);
   Ptr<QuicSocketTxScheduler> sched = schedulerFactory.Create<QuicSocketTxScheduler> ();
-          // std::cout << "SetScheduler大小变化 (移除数量): 前面" << std::endl;
+          // //std::cout << "SetScheduler大小变化 (移除数量): 前面" <<m_txBuffer->AppSize ()<< std::endl;
 
   m_txBuffer->SetScheduler (sched);
-         std::cout << "SetScheduler？？？大小变化 (移除数量): 前面" <<m_txBuffer->AppSize ()<< std::endl;
+         //std::cout << "SetScheduler大小变化 (移除数量): 前面" <<m_txBuffer->AppSize ()<< std::endl;
 
   SetDefaultLatency (m_defaultLatency);
 }
@@ -825,7 +968,7 @@ QuicSocketBase::SendInitialHandshake (uint8_t type,
 
       //server (receiver)
       head.SetPathId(0);
-
+  //  std::cout<<"第四次出现"<<std::endl;
       m_quicl4->SendPacket (this, p, head);
       m_txTrace (p, head, this);
       NotifyDataSent (p->GetSize ());
@@ -904,7 +1047,7 @@ QuicSocketBase::OnReceivedFrame (QuicSubheader &sub)
   NS_LOG_FUNCTION (this << (uint64_t)sub.GetFrameType ());
 
   uint8_t frameType = sub.GetFrameType ();
-std::cout<<"都有啥类型的："<<int(frameType)<<std::endl;
+//std::cout<<"都有啥类型的："<<int(frameType)<<std::endl;
   switch (frameType)
     {
 
@@ -966,6 +1109,8 @@ std::cout<<"都有啥类型的："<<int(frameType)<<std::endl;
         // TODO reply with a PATH_RESPONSE with the same value
         // as that carried by the PATH_CHALLENGE
         NS_LOG_INFO ("Received PATH_CHALLENGE frame");
+        std::cout<<"Received PATH_CHALLENGE OnReceivedPathChallengeFrame " <<std::endl;
+
         OnReceivedPathChallengeFrame(sub);
         break;
 
@@ -980,6 +1125,7 @@ std::cout<<"都有啥类型的："<<int(frameType)<<std::endl;
         // TODO check if it matches what was sent in a PATH_CHALLENGE
         // otherwise abort with a UNSOLICITED_PATH_RESPONSE error
         NS_LOG_INFO ("Received ADD_ADDRESS frame");
+          std::cout<<"Received ADD_ADDRESS OnReceivedAddAddressFrame " <<std::endl;
         OnReceivedAddAddressFrame (sub);
         break;
 
@@ -993,7 +1139,7 @@ std::cout<<"都有啥类型的："<<int(frameType)<<std::endl;
         // TODO check if it matches what was sent in a PATH_CHALLENGE
         // otherwise abort with a UNSOLICITED_PATH_RESPONSE error
         NS_LOG_INFO ("Received MP_ACK frame");
-        // std::cout<<"都没调用怎么进来的?？"<<std::endl;
+        // //std::cout<<"都没调用怎么进来的?？"<<std::endl;
         OnReceivedAckFrame (sub);
         break;
 
@@ -1014,8 +1160,6 @@ QuicSocketBase::OnSendingAckFrame (uint8_t pathId)
 
   NS_ABORT_MSG_IF (m_subflows[pathId]->m_receivedPacketNumbers.empty (),
                    " Sending Ack Frame without packets to acknowledge");
-
-
   NS_LOG_INFO ("Attach an ACK frame to the packet");
 
   std::sort (m_subflows[pathId]->m_receivedPacketNumbers.begin (), m_subflows[pathId]->m_receivedPacketNumbers.end (),
@@ -1035,7 +1179,6 @@ QuicSocketBase::OnSendingAckFrame (uint8_t pathId)
   for (; next_rec_it != m_subflows[pathId]->m_receivedPacketNumbers.end ();
        ++curr_rec_it, ++next_rec_it)
     {
-
       if (((*curr_rec_it) - (*next_rec_it) - 1 > 0)
           and ((*curr_rec_it) != (*next_rec_it)))
         {
@@ -1074,648 +1217,4 @@ QuicSocketBase::OnSendingAckFrame (uint8_t pathId)
     }
   // //std::cout<<"subheader pathid "<<sub.GetPathId()<<"\n";
   return ackFrame;
-}
-
-void
-QuicSocketBase::OnReceivedAckFrame (QuicSubheader &sub)
-{
-  NS_LOG_FUNCTION (this);
-  NS_LOG_INFO ("Process ACK");
-
-  std::cout << " OnReceivedAckFrame刚进来 " << m_txBuffer->AppSize() << " 字节在缓冲区中。" << std::endl;
-
-  uint8_t pathId = sub.GetPathId();
-
-   // Generate RateSample
-  struct RateSample * rs = m_txBuffer->GetRateSample ();
-  rs->m_priorInFlight = m_subflows[pathId]->m_tcb->m_bytesInFlight.Get ();
-
-  uint32_t lostOut = m_txBuffer->GetLost (pathId);
-  uint32_t delivered = m_subflows[pathId]->m_tcb->m_delivered;
-
-  uint32_t previousWindow = m_txBuffer->BytesInFlight (pathId);
-
-  std::vector<uint32_t> additionalAckBlocks = sub.GetAdditionalAckBlocks ();
-  std::vector<uint32_t> gaps = sub.GetGaps ();
-  uint32_t largestAcknowledged = sub.GetLargestAcknowledged ();
-  m_subflows[pathId]->m_tcb->m_lastAckedSeq = largestAcknowledged;
-  uint32_t ackBlockCount = sub.GetAckBlockCount ();
-
-  
-  NS_ABORT_MSG_IF (
-    ackBlockCount != additionalAckBlocks.size ()
-    and ackBlockCount != gaps.size (),
-    "Received Corrupted Ack Frame.");
-
-  std::vector<Ptr<QuicSocketTxItem> > ackedPackets = m_txBuffer->OnAckUpdate (
-    m_subflows[pathId]->m_tcb, largestAcknowledged, additionalAckBlocks, gaps, pathId);
-
-  
-
-  // Count newly acked bytes
-  uint32_t ackedBytes = previousWindow - m_txBuffer->BytesInFlight (pathId);
-//调试点
-  // m_txBuffer->GenerateRateSample (m_subflows[pathId]->m_tcb);
-  rs->m_packetLoss = std::abs ((int) lostOut - (int) m_txBuffer->GetLost (pathId));
-  m_subflows[pathId]->m_tcb->m_lastAckedSackedBytes = m_subflows[pathId]->m_tcb->m_delivered - delivered;
-  // RTO packet acknowledged - IETF Draft QUIC Recovery, Sec. 4.3.3
-  if (m_subflows[pathId]->m_tcb->m_rtoCount > 0)
-    {
-      // Packets after the RTO have been acknowledged
-      if (m_subflows[pathId]->m_tcb->m_largestSentBeforeRto.GetValue () < largestAcknowledged)
-        {
-          uint32_t newPackets = (largestAcknowledged
-                                 - m_subflows[pathId]->m_tcb->m_largestSentBeforeRto.GetValue ()) / GetSegSize ();
-          uint32_t inFlightBeforeRto = m_txBuffer->BytesInFlight (pathId);
-          std::cout<<"meiyong"<<newPackets<<std::endl;
-          //调试点
-          // m_txBuffer->ResetSentList (pathId, newPackets);
-          std::vector<Ptr<QuicSocketTxItem> > lostPackets =
-          
-            m_txBuffer->DetectLostPackets (pathId);
-          if (m_quicCongestionControlLegacy && !lostPackets.empty ())
-            {
-              // Reset congestion window and go into loss mode
-                   //std::cout<<"m_kMinimumWindow大小："<<m_subflows[pathId]->m_tcb->m_kMinimumWindow<<std::endl;
-              m_subflows[pathId]->m_tcb->m_cWnd = m_subflows[pathId]->m_tcb->m_kMinimumWindow;
-              m_subflows[pathId]->m_tcb->m_endOfRecovery = m_subflows[pathId]->m_tcb->m_highTxMark;
-              m_subflows[pathId]->m_tcb->m_ssThresh = m_congestionControl->GetSsThresh (
-                m_subflows[pathId]->m_tcb, inFlightBeforeRto);
-              m_subflows[pathId]->m_tcb->m_congState = TcpSocketState::CA_LOSS;
-              m_congestionControl->CongestionStateSet (
-                m_subflows[pathId]->m_tcb, TcpSocketState::CA_LOSS);
-            }
-        }
-      else
-        {
-          m_subflows[pathId]->m_tcb->m_rtoCount = 0;
-        }
-    }
-
-  // Tail loss probe packet acknowledged - IETF Draft QUIC Recovery, Sec. 4.3.2
-  if (m_subflows[pathId]->m_tcb->m_tlpCount > 0 && !ackedPackets.empty ())
-    {
-      m_subflows[pathId]->m_tcb->m_tlpCount = 0;
-    }
-
-  // Find lost packets
-  std::vector<Ptr<QuicSocketTxItem> > lostPackets = m_txBuffer->DetectLostPackets (pathId);
-  std::cout << " OnReceivedAckFrame结束了 " << m_txBuffer->AppSize() << " 字节在缓冲区中。" << std::endl;
-
-  if (m_appCloseSentListNoEmpty && m_txBuffer->SentListIsEmpty()){//m_appCloseSentListNoEmpty表示"应用层已请求关闭连接，但当时发送列表
-    // std::cout<<"我怀疑就是这里4"<<std::endl;
-    Close();//这里调用了close函数
-  }
-
-
-  // Recover from losses
-  if (!lostPackets.empty ())
-    {
-      if (m_quicCongestionControlLegacy)
-        {
-          //Enter recovery (RFC 6675, Sec. 5)
-          if (m_subflows[pathId]->m_tcb->m_congState != TcpSocketState::CA_RECOVERY)
-            {
-              m_subflows[pathId]->m_tcb->m_congState = TcpSocketState::CA_RECOVERY;
-              m_subflows[pathId]->m_tcb->m_endOfRecovery = m_subflows[pathId]->m_tcb->m_highTxMark;
-              m_congestionControl->CongestionStateSet (
-                m_subflows[pathId]->m_tcb, TcpSocketState::CA_RECOVERY);
-              m_subflows[pathId]->m_tcb->m_ssThresh = m_congestionControl->GetSsThresh (
-                m_subflows[pathId]->m_tcb, BytesInFlight (pathId));
-              m_subflows[pathId]->m_tcb->m_cWnd = m_subflows[pathId]->m_tcb->m_ssThresh;
-            }
-          NS_ASSERT (m_subflows[pathId]->m_tcb->m_congState == TcpSocketState::CA_RECOVERY);
-        }
-      else
-        {
-          DynamicCast<QuicCongestionOps> (m_congestionControl)->OnPacketsLost (
-            m_subflows[pathId]->m_tcb, lostPackets);
-        }
-      DoRetransmit (lostPackets,pathId);
-    }
-  /* else */ 
-  if (ackedBytes > 0)
-    {
-      Ptr<QuicSocketTxItem> lastAcked = ackedPackets.at (0); 
-      if (!m_quicCongestionControlLegacy)
-        {
-          NS_LOG_INFO ("Update the variables in the congestion control (QUIC)");
-          // Process the ACK
-          if(m_enableMultipath && m_ccType == OLIA)
-          {
-            //std::cout<<"OLIA拥塞控制"<<std::endl;
-            m_subflows[pathId]->m_tcb->m_bytesBeforeLost2 += ackedBytes;
-            double alpha = GetOliaAlpha(pathId);
-            double sum_rate = 0;
-            for (uint16_t pid = 0; pid < m_subflows.size(); pid++)
-            {
-              sum_rate += m_subflows[pid]->GetRate();
-            }
-            // DynamicCast<QuicCongestionOps> (m_congestionControl)->OnAckReceived (m_subflows[pathId]->m_tcb, sub, ackedPackets, rs);
-
-            DynamicCast<MpQuicCongestionOps> (m_congestionControl)->OnAckReceived (m_subflows[pathId]->m_tcb, sub, ackedPackets, rs, alpha, sum_rate);
-          }
-          else
-          {
-            //std::cout<<"quicNEWreno拥塞控制"<<std::endl;
-            DynamicCast<QuicCongestionOps> (m_congestionControl)->OnAckReceived (m_subflows[pathId]->m_tcb, sub, ackedPackets, rs);
-          
-          }
-
-          m_lastRtt = m_subflows[pathId]->m_tcb->m_lastRtt;
-        }
-      else
-        {
-          uint32_t ackedSegments = ackedBytes / GetSegSize ();
-
-          NS_LOG_INFO ("Update the variables in the congestion control (legacy), ackedBytes "
-                       << ackedBytes << " ackedSegments " << ackedSegments);
-          // new acks are ordered from the highest packet number to the smalles
-          
-
-          NS_LOG_LOGIC ("Updating RTT estimate");
-          // If the largest acked is newly acked, update the RTT.
-          if (lastAcked->m_packetNumber >= m_subflows[pathId]->m_tcb->m_largestAckedPacket)
-            {
-              Time ackDelay = MicroSeconds (sub.GetAckDelay ());
-              m_subflows[pathId]->m_tcb->m_lastRtt = Now () - lastAcked->m_lastSent - ackDelay;
-              m_lastRtt = m_subflows[pathId]->m_tcb->m_lastRtt;
-            }
-          if (m_subflows[pathId]->m_tcb->m_congState != TcpSocketState::CA_RECOVERY
-              && m_subflows[pathId]->m_tcb->m_congState != TcpSocketState::CA_LOSS)
-            {
-              // Increase the congestion window
-              m_congestionControl->PktsAcked (m_subflows[pathId]->m_tcb, ackedSegments,
-                                              m_subflows[pathId]->m_tcb->m_lastRtt);
-              m_congestionControl->IncreaseWindow (m_subflows[pathId]->m_tcb, ackedSegments);
-            }
-          else
-            {
-              if (m_subflows[pathId]->m_tcb->m_endOfRecovery.GetValue () > largestAcknowledged)
-                {
-                  m_congestionControl->PktsAcked (m_subflows[pathId]->m_tcb, ackedSegments,
-                                                  m_subflows[pathId]->m_tcb->m_lastRtt);
-                  m_congestionControl->IncreaseWindow (m_subflows[pathId]->m_tcb, ackedSegments);
-                }
-              else
-                {
-                  m_subflows[pathId]->m_tcb->m_congState = TcpSocketState::CA_OPEN;
-                  m_congestionControl->PktsAcked (m_subflows[pathId]->m_tcb, ackedSegments, m_subflows[pathId]->m_tcb->m_lastRtt);
-                  m_congestionControl->CongestionStateSet (m_subflows[pathId]->m_tcb, TcpSocketState::CA_OPEN);
-                }
-            }
-        }
-      m_scheduler->PeekabooReward(pathId, lastAckTime);
-      lastAckTime = Now();
-    }
-  else
-    {
-      NS_LOG_INFO ("Received an ACK to ack an ACK");
-    }
-
-  // notify the application that more data can be sent
-  if (GetTxAvailable () > 0)
-    {
-      NotifySend (GetTxAvailable ());
-    }
-
-
-     //std::cout<<"还能进这里OnReceivedAckFrame"<<std::endl;
-
-  // try to send more data
-  SendPendingData (m_connected);
-
-  // Compute timers
-  SetReTxTimeout (pathId);
-}
-
-QuicTransportParameters
-QuicSocketBase::OnSendingTransportParameters ()
-{
-  NS_LOG_FUNCTION (this);
-
-  QuicTransportParameters transportParameters;
-  transportParameters = transportParameters.CreateTransportParameters (
-    m_initial_max_stream_data, m_max_data, m_initial_max_stream_id_bidi,
-    (uint16_t) m_idleTimeout.Get ().GetSeconds (),
-    (uint8_t) m_omit_connection_id, m_subflows[0]->m_tcb->m_segmentSize,
-    m_ack_delay_exponent, m_initial_max_stream_id_uni);
-
-  return transportParameters;
-}
-
-void
-QuicSocketBase::OnReceivedTransportParameters (
-  QuicTransportParameters transportParameters)
-{
-  NS_LOG_FUNCTION (this);
-
-  if (m_receivedTransportParameters)
-    {
-      //std::cout<< "OnReceivedTransportParameters111调用了AbortConnection"  <<std::endl;
-      AbortConnection (
-        QuicSubheader::TransportErrorCodes_t::TRANSPORT_PARAMETER_ERROR,
-        "Duplicate transport parameters reception");
-      return;
-    }
-  m_receivedTransportParameters = true;
-
-// TODO: A client MUST NOT include a stateless reset token. A server MUST treat receipt of a stateless_reset_token_transport
-//   parameter as a connection error of type TRANSPORT_PARAMETER_ERROR
-
-  uint32_t mask = transportParameters.GetInitialMaxStreamIdBidi ()
-    & 0x00000003;
-  if ((mask == 0) && m_socketState != CONNECTING_CLT)
-    {
-      // TODO AbortConnection(QuicSubheader::TransportErrorCodes_t::TRANSPORT_PARAMETER_ERROR, "Invalid Initial Max Stream Id Bidi value provided from Server");
-      return;
-    }
-  else if ((mask == 1) && m_socketState != CONNECTING_SVR)
-    {
-      // TODO AbortConnection(QuicSubheader::TransportErrorCodes_t::TRANSPORT_PARAMETER_ERROR, "Invalid Initial Max Stream Id Bidi value provided from Client");
-      return;
-    }
-
-  mask = transportParameters.GetInitialMaxStreamIdUni () & 0x00000003;
-  if ((mask == 2) && m_socketState != CONNECTING_CLT)
-    {
-      // TODO AbortConnection(QuicSubheader::TransportErrorCodes_t::TRANSPORT_PARAMETER_ERROR, "Invalid Initial Max Stream Id Uni value provided from Server");
-      return;
-    }
-  else if ((mask == 3) && m_socketState != CONNECTING_SVR)
-    {
-      // TODO AbortConnection(QuicSubheader::TransportErrorCodes_t::TRANSPORT_PARAMETER_ERROR, "Invalid Initial Max Stream Id Uni value provided from Client");
-      return;
-    }
-
-  if (transportParameters.GetMaxPacketSize ()
-      < QuicSocketBase::MIN_INITIAL_PACKET_SIZE
-      or transportParameters.GetMaxPacketSize () > 65527)
-    {
-      //std::cout<< "OnReceivedTransportParameters222调用了AbortConnection"  <<std::endl;
-      AbortConnection (
-        QuicSubheader::TransportErrorCodes_t::TRANSPORT_PARAMETER_ERROR,
-        "Invalid Max Packet Size value provided");
-      return;
-    }
-
-
-  NS_LOG_DEBUG (
-    "Before applying received transport parameters " << " m_initial_max_stream_data " << m_initial_max_stream_data << " m_max_data " << m_max_data << " m_initial_max_stream_id_bidi " << m_initial_max_stream_id_bidi << " m_idleTimeout " << m_idleTimeout << " m_omit_connection_id " << m_omit_connection_id << " m_tcb->m_segmentSize " << m_subflows[0]->m_tcb->m_segmentSize << " m_ack_delay_exponent " << m_ack_delay_exponent << " m_initial_max_stream_id_uni " << m_initial_max_stream_id_uni);
-
-  m_initial_max_stream_data = std::min (
-    transportParameters.GetInitialMaxStreamData (),
-    m_initial_max_stream_data);
-  m_quicl5->UpdateInitialMaxStreamData (m_initial_max_stream_data);
-
-  m_max_data = std::min (transportParameters.GetInitialMaxData (),
-                         m_max_data);
-
-  m_initial_max_stream_id_bidi = std::min (
-    transportParameters.GetInitialMaxStreamIdBidi (),
-    m_initial_max_stream_id_bidi);
-
-  m_idleTimeout = Time (
-    std::min (transportParameters.GetIdleTimeout (),
-              (uint16_t) m_idleTimeout.Get ().GetSeconds ()) * 1e9);
-
-  m_omit_connection_id = std::min (transportParameters.GetOmitConnection (),
-                                   (uint8_t) m_omit_connection_id);
-
-  SetSegSize (
-    std::min ((uint32_t) transportParameters.GetMaxPacketSize (),
-              m_subflows[0]->m_tcb->m_segmentSize));
-
-  m_ack_delay_exponent = std::min (transportParameters.GetAckDelayExponent (),
-                                   m_ack_delay_exponent);
-
-  m_initial_max_stream_id_uni = std::min (
-    transportParameters.GetInitialMaxStreamIdUni (),
-    m_initial_max_stream_id_uni);
-
-  NS_LOG_DEBUG (
-    "After applying received transport parameters " << " m_initial_max_stream_data " << m_initial_max_stream_data << " m_max_data " << m_max_data << " m_initial_max_stream_id_bidi " << m_initial_max_stream_id_bidi << " m_idleTimeout " << m_idleTimeout << " m_omit_connection_id " << m_omit_connection_id << " m_tcb->m_segmentSize " << m_subflows[0]->m_tcb->m_segmentSize << " m_ack_delay_exponent " << m_ack_delay_exponent << " m_initial_max_stream_id_uni " << m_initial_max_stream_id_uni);
-}
-
-int
-QuicSocketBase::DoConnect (void)
-{
-  NS_LOG_FUNCTION (this);
-
-  if (m_socketState != IDLE and m_socketState != QuicSocket::LISTENING)
-    {
-      //m_errno = ERROR_INVAL;
-      return -1;
-    }
-
-  if (m_socketState == LISTENING)
-    {
-      SetState (CONNECTING_SVR);
-    }
-  else if (m_socketState == IDLE)
-    {
-      SetState (CONNECTING_CLT);
-      QuicHeader q;
-      SendInitialHandshake (QuicHeader::INITIAL, q, 0);
-    }
-  return 0;
-}
-
-int
-QuicSocketBase::DoFastConnect (void)
-{
-  NS_LOG_FUNCTION (this);
-  NS_ABORT_MSG_IF (!IsVersionSupported (m_vers),
-                   "0RTT Handshake requested with wrong Initial Version");
-
-  if (m_socketState != IDLE)
-    {
-      //m_errno = ERROR_INVAL;
-      return -1;
-    }
-
-  else if (m_socketState == IDLE)
-    {
-      SetState (OPEN);
-      Simulator::ScheduleNow (&QuicSocketBase::ConnectionSucceeded, this);
-      m_congestionControl->CongestionStateSet (m_subflows[0]->m_tcb,
-                                               TcpSocketState::CA_OPEN);
-      QuicHeader q;
-      SendInitialHandshake (QuicHeader::ZRTT_PROTECTED, q, 0);
-    }
-  return 0;
-}
-
-void
-QuicSocketBase::ConnectionSucceeded ()
-{ // Wrapper to protected function NotifyConnectionSucceeded() so that it can
-  // be called as a scheduled event
-  NotifyConnectionSucceeded ();
-  // The if-block below was moved from ProcessSynSent() to here because we need
-  // to invoke the NotifySend() only after NotifyConnectionSucceeded() to
-  // reflect the behaviour in the real world.
-  if (GetTxAvailable () > 0)
-    {
-      NotifySend (GetTxAvailable ());
-    }
-}
-
-int
-QuicSocketBase::DoClose (void)
-{
-  NS_LOG_FUNCTION (this);
-  NS_LOG_INFO (this << " DoClose at time " << Simulator::Now ().GetSeconds ());
-//std::cout<<"执行了DoClose"<<std::endl;
-  if (m_socketState != IDLE)
-    {
-      SetState (IDLE);
-    }
-
-  SetRecvCallback (MakeNullCallback<void, Ptr<Socket> > ());
-  return m_quicl4->RemoveSocket (this);
-}
-
-
-void
-QuicSocketBase::ReceivedData (Ptr<Packet> p, const QuicHeader& quicHeader,
-                              Address &address)
-{
-  NS_LOG_FUNCTION (this);
-  m_rxTrace (p, quicHeader, this);
-
-  //For multipath Implementation
-  uint8_t pathId = quicHeader.GetPathId();
-  m_currentPathId = pathId;//更新当前路径ID成员变量m_currentPathId，记录这个包来自哪个路径。
-  m_currentFromAddress = address;//发送方的地址（用于IPv4/IPv6等）。
-  // //std::cout<< "发送方的地址==address"  <<address<<std::endl;
-
-  NS_LOG_INFO ("Received packet of size " << p->GetSize ());
-  //如果不在排水期，则进入if块重置空闲超时；否则，直接返回丢弃包。
-  if (!m_drainingPeriodEvent.IsRunning ())
-    {
-      m_idleTimeoutEvent.Cancel ();   // 每次发送数据包（SendDataPacket被调用时），都会重置这个定时器。意思是“只要有数据发送，就延长空闲超时”。
-      NS_LOG_LOGIC (
-        this << " ReceivedData Schedule Close at time " << Simulator::Now ().GetSeconds () << " to expire at time " << (Simulator::Now () + m_idleTimeout.Get ()).GetSeconds ());
-        // std::cout<<"ReceivedData取消设置   if (!m_drainingPeriodEvent.IsRunning ())   m_idleTimeoutEvent"<<std::endl;
-
-        m_idleTimeoutEvent = Simulator::Schedule (m_idleTimeout, &QuicSocketBase::Close, this);//这句原来没注释
-        // std::cout<<"ReceivedData启动 if (!m_drainingPeriodEvent.IsRunning ())   m_idleTimeoutEvent"<<std::endl;
-       //std::cout<<"执行完receivedata的close    m_socketState ==   "<<m_socketState<<std::endl;
-
-    }
-  else   // If the socket is in Draining Period, discard the packets
-    {
-      return;
-    }
-
-  int onlyAckFrames = 0;//用于标记包是否只包含ACK帧
-  bool unsupportedVersion = false;//标记版本是否不支持
-//检查头部是否为0-RTT（零往返时间）保护包，且socket处于LISTENING状态（服务器监听中）////////////////////////////////////////////////////////////////////////////////////////////////
-  if (quicHeader.IsORTT () and m_socketState == LISTENING)
-    {
-  //std::cout<< "接收m_socketState==LISTENING"  <<std::endl;
-
-      if (m_serverBusy)
-        {
-          //如果服务器忙碌（m_serverBusy为true），调用AbortConnection中止连接，发送错误码"SERVER_BUSY"并返回。防止服务器过载。
-          //std::cout<< "quicHeader.IsORTT ()调用了AbortConnection"  <<std::endl;
-          AbortConnection (QuicSubheader::TransportErrorCodes_t::SERVER_BUSY,
-                           "Server too busy to accept new connections");
-          return;
-        }
-
-      m_couldContainTransportParameters = true;
-    //调用m_quicl5->DispatchRecv分派接收数据（m_quicl5是QuicL5Protocol对象，处理应用层）。返回值为onlyAckFrames
-      onlyAckFrames = m_quicl5->DispatchRecv (p, address);
-      //将接收到的包号添加到对应子流的m_receivedPacketNumbers向量中，用于跟踪和生成ACK帧
-      m_subflows[pathId]->m_receivedPacketNumbers.push_back (quicHeader.GetPacketNumber ());
-
-      m_connected = true;
-      //切换密钥阶段（key phase），用于加密保护。QUIC使用密钥阶段来轮换加密密钥。如果当前是PHASE_ONE，则切换到PHASE_ZERO，反之亦然。
-      m_keyPhase == QuicHeader::PHASE_ONE ? m_keyPhase =
-        QuicHeader::PHASE_ZERO :
-        m_keyPhase =
-          QuicHeader::PHASE_ONE;
-          //将socket状态设置为OPEN（打开），表示连接就绪可传输数据。
-      SetState (OPEN);
-      //立即调度ConnectionSucceeded函数，通知上层连接成功（可能触发回调）。
-      Simulator::ScheduleNow (&QuicSocketBase::ConnectionSucceeded, this);
-      m_congestionControl->CongestionStateSet (m_subflows[pathId]->m_tcb,TcpSocketState::CA_OPEN);
-      m_couldContainTransportParameters = false;
-
-    }
-//检查头部是否为INITIAL（初始握手包），且socket处于CONNECTING_SVR（服务器连接中）。这是服务器处理客户端初始握手的逻辑。////////////////////////////////////////////////////////////////////////////////////////////////
-  else if (quicHeader.IsInitial () and m_socketState == CONNECTING_SVR)
-    {
-        //std::cout<< "接收m_socketState==CONNECTING_SVR  &  IsInitial"  <<std::endl;
-
-      NS_LOG_INFO ("Server receives INITIAL");
-      if (m_serverBusy)
-        {
-          //std::cout<< "quicHeader.IsInitial () 调用了AbortConnection"  <<std::endl;
-          AbortConnection (QuicSubheader::TransportErrorCodes_t::SERVER_BUSY,
-                           "Server too busy to accept new connections");//同上，如果服务器忙碌，中止连接。
-          return;
-        }
-        //检查初始包大小是否小于最小要求（1200字节，QUIC规范要求以防止放大攻击）。如果太小，构建错误消息并中止连接（协议违规）。
-      if (p->GetSize () < QuicSocketBase::MIN_INITIAL_PACKET_SIZE)
-        {
-          std::stringstream error;
-          error << "Initial Packet smaller than "
-                << QuicSocketBase::MIN_INITIAL_PACKET_SIZE << " octects";
-          //std::cout<< "p->GetSize () < QuicSocketBase::MIN_INITIAL_PACKET_SIZE 调用了AbortConnection"  <<std::endl;
-          AbortConnection (QuicSubheader::TransportErrorCodes_t::PROTOCOL_VIOLATION,
-            error.str ().c_str ());
-          return;
-        }
-       // 同上，分派接收数据。
-      onlyAckFrames = m_quicl5->DispatchRecv (p, address);
-      //同上，记录包号。
-      m_subflows[pathId]->m_receivedPacketNumbers.push_back (quicHeader.GetPacketNumber ());
-        //检查版本是否支持（调用IsVersionSupported）。如果支持，重置参数标志，并发送握手响应（HANDSHAKE类型）。
-      if (IsVersionSupported (quicHeader.GetVersion ()))
-        {
-          m_couldContainTransportParameters = false;
-          SendInitialHandshake (QuicHeader::HANDSHAKE, quicHeader, p);
-          
-        }
-      else//如果版本不支持，设置unsupportedVersion为true，并发送版本协商包。
-        {
-          NS_LOG_INFO (this << " WRONG VERSION " << quicHeader.GetVersion ());
-          unsupportedVersion = true;
-          SendInitialHandshake (QuicHeader::VERSION_NEGOTIATION, quicHeader,p);
-        }
-      
-      return;
-    }
-//检查头部是否为HANDSHAKE（握手包），且socket处于CONNECTING_CLT（客户端连接中）。这是客户端处理服务器握手响应的逻辑。注释提到传输参数接收可能导致未定义行为。
-  else if (quicHeader.IsHandshake () and m_socketState == CONNECTING_CLT)   // Undefined compiler behaviour if i try to receive transport parameters
-    {
-      //std::cout<< "接收m_socketState==CONNECTING_CLT  &  IsHandshake"  <<std::endl;
-
-      NS_LOG_INFO ("Client receives HANDSHAKE");
-
-      onlyAckFrames = m_quicl5->DispatchRecv (p, address);
-      m_subflows[pathId]->m_receivedPacketNumbers.push_back (quicHeader.GetPacketNumber ());
-
-      SetState (OPEN);
-      Simulator::ScheduleNow(&QuicSocketBase::ConnectionSucceeded, this);
-      m_congestionControl->CongestionStateSet (m_subflows[pathId]->m_tcb,
-                                               TcpSocketState::CA_OPEN);
-      m_couldContainTransportParameters = false;
-
-      SendInitialHandshake (QuicHeader::HANDSHAKE, quicHeader, p);
-
-      return;
-    }
-//服务器接收握手包，且处于CONNECTING_SVR状态。
-  else if (quicHeader.IsHandshake () and m_socketState == CONNECTING_SVR)
-    {
-      //std::cout<< "接收m_socketState==CONNECTING_SVR  &  IsHandshake"  <<std::endl;
-
-      NS_LOG_INFO ("Server receives HANDSHAKE");
-
-      //For multipath implementation
-      CreateNewSubflows();
-
-      onlyAckFrames = m_quicl5->DispatchRecv (p, address);
-      m_subflows[pathId]->m_receivedPacketNumbers.push_back (quicHeader.GetPacketNumber ());
-      SetState (OPEN);
-      Simulator::ScheduleNow (&QuicSocketBase::ConnectionSucceeded, this);
-      m_congestionControl->CongestionStateSet (m_subflows[pathId]->m_tcb,TcpSocketState::CA_OPEN);
-      //发送挂起的待发数据（带ACK）。
-      //std::cout<<"还能进这里ReceivedData"<<std::endl;
-      SendPendingData (true);
-
-      return;
-    }
-//客户端接收版本协商包，且处于CONNECTING_CLT状态。
-  else if (quicHeader.IsVersionNegotiation () and m_socketState == CONNECTING_CLT)
-    {
-      //std::cout<< "接收m_socketState==CONNECTING_CLT  &  IsVersionNegotiation"  <<std::endl;
-
-      NS_LOG_INFO ("Client receives VERSION_NEGOTIATION");
-      //分配缓冲区并复制包数据，用于解析版本列表。
-      uint8_t *buffer = new uint8_t[p->GetSize ()];
-      p->CopyData (buffer, p->GetSize ());
-        //解析包数据，每4字节一个版本号，转换为uint32_t并存入向量receivedVersions（大端序转换）。
-      std::vector<uint32_t> receivedVersions;
-      for (uint8_t i = 0; i < p->GetSize (); i = i + 4)
-        {
-          receivedVersions.push_back (
-            buffer[i] + (buffer[i + 1] << 8) + (buffer[i + 2] << 16)
-            + (buffer[i + 3] << 24));
-        }
-
-      std::vector<uint32_t> supportedVersions;
-      supportedVersions.push_back (QUIC_VERSION);
-      supportedVersions.push_back (QUIC_VERSION_DRAFT_10);
-      supportedVersions.push_back (QUIC_VERSION_NS3_IMPL);
-
-      uint32_t foundVersion = 0;
-      for (uint8_t i = 0; i < receivedVersions.size (); i++)
-        {
-          for (uint8_t j = 0; j < supportedVersions.size (); j++)
-            {
-              if (receivedVersions[i] == supportedVersions[j])
-                {
-                  foundVersion = receivedVersions[i];
-                }
-            }
-        }
-        //在接收版本中查找匹配的支持版本。如果找到，设置foundVersion
-      if (foundVersion != 0)
-        {
-          NS_LOG_INFO ("A matching supported version is found " << foundVersion << " re-send initial");
-          m_vers = foundVersion;
-          SendInitialHandshake (QuicHeader::INITIAL, quicHeader, p);
-        }
-      else
-        {
-          //std::cout<< "quicHeader.IsVersionNegotiation () 调用了AbortConnection"  <<std::endl;
-          AbortConnection (
-            QuicSubheader::TransportErrorCodes_t::VERSION_NEGOTIATION_ERROR,
-            "No supported Version found by the Client");
-          return;
-        }
-      return;
-    }
-  //注释表示这里可能需要处理ACK（待办）。提到如果包只含ACK，不能显式ACK它，并检查延迟ACK。
-  else if (quicHeader.IsShort () and m_socketState == OPEN)
-    {
-       //std::cout<< "接收m_socketState==OPEN  &  IsShort"  <<std::endl;
-
-      // TODOACK here?
-      // we need to check if the packet contains only an ACK frame
-      // in this case we cannot explicitely ACK it!
-      // check if delayed ACK is used
-      
-      m_subflows[pathId]->m_receivedPacketNumbers.push_back (quicHeader.GetPacketNumber ());
-      onlyAckFrames = m_quicl5->DispatchRecv (p, address);
-
-    }
-  //如果状态为CLOSING（关闭中）。
-  else if (m_socketState == CLOSING)
-    {
-     //std::cout<< "接收m_socketState==CLOSING "  <<std::endl;
-      AbortConnection (m_transportErrorCode,
-                       "Received packet in Closing state");
-    }
-  //
-  else
-    {
-                  //std::cout<< "接收m_socketState==else "  <<std::endl;
-
-      return;
-    }
-
-  // trigger the process for ACK handling if the received packet was not ACK only
-  NS_LOG_DEBUG ("onlyAckFrames " << onlyAckFrames << " unsupportedVersion " << unsupportedVersion);
-  if (onlyAckFrames == 1 && !unsupportedVersion)
-    {
-      m_lastReceived = Simulator::Now ();
-      NS_LOG_DEBUG ("Call MaybeQueueAck");
-      MaybeQueueAck (pathId);
-    }
-
 }
