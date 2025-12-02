@@ -41,7 +41,26 @@ if local_shell.count_screens() != 0:
 
 commands_to_run = []
 
-for run in get_tcp_run_list():
+# for run in get_tcp_run_list():
+#     logs_ns3_dir = "runs/" + run["name"] + "/logs_ns3"
+#     local_shell.remove_force_recursive(logs_ns3_dir)
+#     local_shell.make_full_dir(logs_ns3_dir)
+#     commands_to_run.append(
+#         "cd ../../../ns3-sat-sim/simulator; "
+#         "./waf --run=\"main_satnet --run_dir='../../paper/ns3_experiments/a_b/runs/" + run["name"] + "'\" "
+#         "2>&1 | tee '../../paper/ns3_experiments/a_b/" + logs_ns3_dir + "/console.txt'"
+#     )
+
+# for run in get_pings_run_list():
+#     logs_ns3_dir = "runs/" + run["name"] + "/logs_ns3"
+#     local_shell.remove_force_recursive(logs_ns3_dir)
+#     local_shell.make_full_dir(logs_ns3_dir)
+#     commands_to_run.append(
+#         "cd ../../../ns3-sat-sim/simulator; " 
+#         "./waf --run=\"main_satnet --run_dir='../../paper/ns3_experiments/a_b/runs/" + run["name"] + "'\" "
+#         "2>&1 | tee '../../paper/ns3_experiments/a_b/" + logs_ns3_dir + "/console.txt'"
+#     )
+for run in get_quic_run_list():
     logs_ns3_dir = "runs/" + run["name"] + "/logs_ns3"
     local_shell.remove_force_recursive(logs_ns3_dir)
     local_shell.make_full_dir(logs_ns3_dir)
@@ -50,17 +69,6 @@ for run in get_tcp_run_list():
         "./waf --run=\"main_satnet --run_dir='../../paper/ns3_experiments/a_b/runs/" + run["name"] + "'\" "
         "2>&1 | tee '../../paper/ns3_experiments/a_b/" + logs_ns3_dir + "/console.txt'"
     )
-
-for run in get_pings_run_list():
-    logs_ns3_dir = "runs/" + run["name"] + "/logs_ns3"
-    local_shell.remove_force_recursive(logs_ns3_dir)
-    local_shell.make_full_dir(logs_ns3_dir)
-    commands_to_run.append(
-        "cd ../../../ns3-sat-sim/simulator; " 
-        "./waf --run=\"main_satnet --run_dir='../../paper/ns3_experiments/a_b/runs/" + run["name"] + "'\" "
-        "2>&1 | tee '../../paper/ns3_experiments/a_b/" + logs_ns3_dir + "/console.txt'"
-    )
-
 # Run the commands
 print("Running commands (at most %d in parallel)..." % max_num_processes)
 for i in range(len(commands_to_run)):
@@ -74,3 +82,8 @@ print("Waiting completion of the last %d..." % max_num_processes)
 while local_shell.count_screens() > 0:
     time.sleep(2)
 print("Finished.")
+    # commands_to_run.append(
+    #     "cd ../../../ns3-sat-sim/simulator; "
+    #     "./waf --run=\"main_satnet --run_dir='../../paper/ns3_experiments/a_b/runs/" + run["name"] + "'\" "
+    #     "2>&1 | tee '../../paper/ns3_experiments/a_b/" + logs_ns3_dir + "/console.txt'"
+    # )

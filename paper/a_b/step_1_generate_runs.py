@@ -78,6 +78,54 @@ for run in get_tcp_run_list():
     local_shell.sed_replace_in_file_plain(run_dir + "/schedule.csv", "[FROM]", str(run["from_id"]))
     local_shell.sed_replace_in_file_plain(run_dir + "/schedule.csv", "[TO]", str(run["to_id"]))
 
+
+# QUIC runs
+for run in get_quic_run_list():
+    run_dir = "runs/" + run["name"]
+    local_shell.remove_force_recursive(run_dir)
+    local_shell.make_full_dir(run_dir)
+
+    # config_ns3.properties
+    local_shell.copy_file("templates/template_quic_a_b_config_ns3.properties", run_dir + "/config_ns3.properties")
+    local_shell.sed_replace_in_file_plain(run_dir + "/config_ns3.properties",
+                                          "[SATELLITE-NETWORK]", str(run["satellite_network"]))
+    local_shell.sed_replace_in_file_plain(run_dir + "/config_ns3.properties",
+                                          "[DYNAMIC-STATE]", str(run["dynamic_state"]))
+    local_shell.sed_replace_in_file_plain(run_dir + "/config_ns3.properties",
+                                          "[DYNAMIC-STATE-UPDATE-INTERVAL-NS]", str(run["dynamic_state_update_interval_ns"]))
+    local_shell.sed_replace_in_file_plain(run_dir + "/config_ns3.properties",
+                                          "[SIMULATION-END-TIME-NS]", str(run["simulation_end_time_ns"]))
+    local_shell.sed_replace_in_file_plain(run_dir + "/config_ns3.properties",
+                                          "[ISL-DATA-RATE-MEGABIT-PER-S]", str(run["data_rate_megabit_per_s"]))
+    local_shell.sed_replace_in_file_plain(run_dir + "/config_ns3.properties",
+                                          "[GSL-DATA-RATE-MEGABIT-PER-S]", str(run["data_rate_megabit_per_s"]))
+    local_shell.sed_replace_in_file_plain(run_dir + "/config_ns3.properties",
+                                          "[ISL-MAX-QUEUE-SIZE-PKTS]", str(run["queue_size_pkt"]))
+    local_shell.sed_replace_in_file_plain(run_dir + "/config_ns3.properties",
+                                          "[GSL-MAX-QUEUE-SIZE-PKTS]", str(run["queue_size_pkt"]))
+    local_shell.sed_replace_in_file_plain(run_dir + "/config_ns3.properties",
+                                          "[ENABLE-ISL-UTILIZATION-TRACKING]", "true" if run["enable_isl_utilization_tracking"] else "false")
+    if run["enable_isl_utilization_tracking"]:
+        local_shell.sed_replace_in_file_plain(
+            run_dir + "/config_ns3.properties",
+            "[ISL-UTILIZATION-TRACKING-INTERVAL-NS-COMPLETE]",
+            "isl_utilization_tracking_interval_ns=" + str(run["isl_utilization_tracking_interval_ns"])
+        )
+    else:
+        local_shell.sed_replace_in_file_plain(run_dir + "/config_ns3.properties",
+                                              "[ISL-UTILIZATION-TRACKING-INTERVAL-NS-COMPLETE]", "")
+
+    # quic_flow_schedule.csv
+    local_shell.copy_file("templates/template_quic_flow_schedule.csv", run_dir + "/quic_flow_schedule.csv")
+    local_shell.sed_replace_in_file_plain(run_dir + "/quic_flow_schedule.csv", "[FROM]", str(run["from_id"]))
+    local_shell.sed_replace_in_file_plain(run_dir + "/quic_flow_schedule.csv", "[TO]", str(run["to_id"]))
+
+# Print finish
+print("Success: generated runs")
+
+
+
+
 # Ping runs
 for run in get_pings_run_list():
 
