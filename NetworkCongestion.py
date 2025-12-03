@@ -224,6 +224,178 @@ def visualize_constellation(G, positions, round_num):
     else:
         print("无拥塞链路")
 
+# 修改：2D矩形可视化函数，去掉长跨越线，用向两边延伸的射线替代，并支持调整点大小、间距、线粗细
+def visualize_2d_rectangular(G, num_planes, sats_per_plane, round_num):
+    # 可调整参数：在这里修改值来测试不同设置
+    node_size = 5  # 点大小（默认8，增大让点更明显）
+    line_width = 1  # 线粗细（默认2，减小让线更细）
+    x_spacing = 8.0  # 水平点间距（增大如1.5来拉开x方向距离）
+    y_spacing = 8.0  # 垂直点间距（增大如1.5来拉开y方向距离）
+    ray_length = 0.5  # 射线长度（增大如1.0让环绕连接更明显）
+
+    fig = go.Figure()
+
+    # 计算2D位置：应用间距缩放
+    positions_2d = {}
+    for plane in range(num_planes):
+        for sat in range(sats_per_plane):
+            sat_id = plane * sats_per_plane + sat
+            # x = sat * x_spacing (横向：每个平面内卫星顺序)
+            # y = -plane * y_spacing (纵向：平面从上到下，负号使Y轴向上)
+            positions_2d[sat_id] = (sat * x_spacing, -plane * y_spacing)
+
+    # 绘制卫星节点
+    xs, ys, hover_texts = [], [], []
+    for sat_id, (x, y) in positions_2d.items():
+        xs.append(x)
+        ys.append(y)
+        total_load = sum(G[sat_id][nbr]['load'] for nbr in G.neighbors(sat_id))
+        hover_texts.append(f"Satellite ID: {sat_id}<br>Total Connected Load: {total_load:.2f} Mbps<br>Delay: {LINK_DELAY} ms")
+    fig.add_trace(go.Scatter(
+        x=xs, y=ys,
+        mode='markers',
+        marker=dict(size=node_size, color='lightblue'),  # 这里调整点大小
+        name='Satellites',
+        text=hover_texts,
+        hovertemplate="%{text}<extra></extra>"
+    ))
+
+    # 绘制链路
+    congested_edges = []
+    for u, v, data in G.edges(data=True):
+        pos_u = positions_2d[u]
+        pos_v = positions_2d[v]
+        x_u, y_u = pos_u
+        x_v, y_v = pos_v
+        delta_x = abs(x_u - x_v)
+        delta_y = abs(y_u - y_v)
+        color = 'red' if data['load'] > data['capacity'] else 'gray'
+        load = data['load']
+        delay = data['delay']
+        hover_text = f"Link {u}-{v}<br>Load: {load:.2f} Mbps<br>Capacity: {data['capacity']} Mbps<br>Delay: {delay} ms (wrap-around)" if delta_y > 1 or (delta_y == 0 and delta_x > (sats_per_plane * x_spacing) / 2) else f"Link {u}-{v}<br>Load: {load:.2f} Mbps<br>Capacity: {data['capacity']} Mbps<br>Delay: {delay} ms"
+        if color == 'red':
+            congested_edges.append((u, v))
+
+        # 检测是否为跨越边（注意：delta_x 需考虑间距缩放）
+        is_wrap = False
+        wrap_type = None
+        if delta_y == 0 and delta_x > (sats_per_plane * x_spacing) / 2:
+            is_wrap = True
+            wrap_type = 'horizontal'
+        elif delta_y > y_spacing:  # 考虑间距
+            is_wrap = True
+            wrap_type = 'vertical'
+
+        if not is_wrap:
+            # 正常绘制线段
+            fig.add_trace(go.Scatter(
+                x=[x_u, x_v], y=[y_u, y_v],
+                mode='lines',
+                line=dict(color=color, width=line_width),  # 这里调整线粗细
+                opacity=0.5,
+                showlegend=False,
+                text=[hover_text, hover_text],
+                hovertemplate="%{text}<extra></extra>"
+            ))
+        else:
+            # 绘制射线
+            if wrap_type == 'horizontal':
+                min_x = min(x_u, x_v)
+                max_x = max(x_u, x_v)
+                y = y_u  # same y
+                # 左射线
+                fig.add_trace(go.Scatter(
+                    x=[min_x, min_x - ray_length], y=[y, y],
+                    mode='lines',
+                    line=dict(color=color, width=line_width),  # 这里调整线粗细
+                    opacity=0.5,
+                    showlegend=False,
+                    text=[hover_text, hover_text],
+                    hovertemplate="%{text}<extra></extra>"
+                ))
+                # 右射线
+                fig.add_trace(go.Scatter(
+                    x=[max_x, max_x + ray_length], y=[y, y],
+                    mode='lines',
+                    line=dict(color=color, width=line_width),  # 这里调整线粗细
+                    opacity=0.5,
+                    showlegend=False,
+                    text=[hover_text, hover_text],
+                    hovertemplate="%{text}<extra></extra>"
+                ))
+            elif wrap_type == 'vertical':
+                min_y = min(y_u, y_v)  # bottom (more negative)
+                max_y = max(y_u, y_v)  # top (less negative)
+                # 确定每个射线的x（因为inter-plane有偏移，射线从各自节点出发）
+                if y_u == min_y:
+                    bottom_x = x_u
+                    top_x = x_v
+                else:
+                    bottom_x = x_v
+                    top_x = x_u
+                # 下射线
+                fig.add_trace(go.Scatter(
+                    x=[bottom_x, bottom_x], y=[min_y, min_y - ray_length],
+                    mode='lines',
+                    line=dict(color=color, width=line_width),  # 这里调整线粗细
+                    opacity=0.5,
+                    showlegend=False,
+                    text=[hover_text, hover_text],
+                    hovertemplate="%{text}<extra></extra>"
+                ))
+                # 上射线
+                fig.add_trace(go.Scatter(
+                    x=[top_x, top_x], y=[max_y, max_y + ray_length],
+                    mode='lines',
+                    line=dict(color=color, width=line_width),  # 这里调整线粗细
+                    opacity=0.5,
+                    showlegend=False,
+                    text=[hover_text, hover_text],
+                    hovertemplate="%{text}<extra></extra>"
+                ))
+
+    # 设置布局，扩展轴范围以显示射线，并调整比例
+    max_x = (sats_per_plane - 1) * x_spacing + ray_length * 2
+    min_x = -ray_length * 2
+    max_y = ray_length * 2
+    min_y = -(num_planes - 1) * y_spacing - ray_length * 2
+    fig.update_layout(
+        title=f'2D 矩形展开卫星星座可视化 (轮次 {round_num}) - 红色为拥塞链路，射线表示环绕连接<br>X: 平面内卫星ID, Y: 平面ID (从上到下)',
+        xaxis=dict(title=f'卫星在平面内位置 (0 to {sats_per_plane-1})', range=[min_x, max_x]),
+        yaxis=dict(title=f'轨道平面ID (0 to {num_planes-1}, 负Y表示向下)', range=[min_y, max_y]),
+        width=800, height=800 * num_planes / sats_per_plane,  # 调整高度以匹配矩形比例
+        showlegend=False
+    )
+
+    # 保存为交互HTML，并添加CSS来居中图表
+    html_file = f'2d_rectangular_congestion_round_{round_num}.html'
+    # 使用自定义模板来添加居中样式
+    fig.write_html(
+        html_file,
+        include_plotlyjs='cdn',  # 使用CDN加载JS，减小文件大小
+        full_html=True,
+        div_id='plotly-div'  # 指定div ID
+    )
+    # 追加CSS到HTML文件末尾（居中容器）
+    with open(html_file, 'a') as f:
+        f.write("""
+<style>
+    body { margin: 0; padding: 0; display: flex; justify-content: center; align-items: center; height: 100vh; }
+    #plotly-div { margin: 0 auto; max-width: 100%; }
+</style>
+""")
+    print(f"交互式2D矩形可视化已保存为 '{html_file}'（在浏览器中打开可动态查看，已居中）")
+    
+    # 打印拥塞链路列表（同3D）
+    if congested_edges:
+        print("拥塞链路列表:")
+        for edge in congested_edges[:10]:
+            print(f"  ({edge[0]}, {edge[1]}) - 负载: {G[edge[0]][edge[1]]['load']:.2f} Mbps")
+        if len(congested_edges) > 10:
+            print(f"  ... (总 {len(congested_edges)} 条拥塞链路)")
+    else:
+        print("无拥塞链路")
+
 # 主函数
 def run_simulation():
     G = create_walker_constellation()
@@ -247,6 +419,9 @@ def run_simulation():
         
         # 可视化最后一个时间步的负载，使用交互3D
         visualize_constellation(G, positions, round_num)
+        
+        # 新增：调用2D矩形可视化
+        visualize_2d_rectangular(G, NUM_PLANES, SAT_PER_PLANE, round_num)
 
 if __name__ == "__main__":
     run_simulation()
