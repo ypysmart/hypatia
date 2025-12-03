@@ -1,26 +1,8 @@
-# The MIT License (MIT)
-#
-# Copyright (c) 2020 ETH Zurich
-#
-# Permission is hereby granted, free of charge, to any person obtaining a copy
-# of this software and associated documentation files (the "Software"), to deal
-# in the Software without restriction, including without limitation the rights
-# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-# copies of the Software, and to permit persons to whom the Software is
-# furnished to do so, subject to the following conditions:
-#
-# The above copyright notice and this permission notice shall be included in all
-# copies or substantial portions of the Software.
-#
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-# SOFTWARE.
+# Copyright (c) 2025 你可以写你名字
+# 基于原版 algorithm_free_one_only_over_isls 修改而来
 
 from .fstate_calculation import *
+import math
 
 
 def algorithm_free_one_only_over_isls(
@@ -37,83 +19,72 @@ def algorithm_free_one_only_over_isls(
         enable_verbose_logs
 ):
     """
-    FREE-ONE ONLY OVER INTER-SATELLITE LINKS ALGORITHM
-
-    "one"
-    This algorithm assumes that every satellite and ground station has exactly 1 GSL interface.
-
-    "free"
-    This 1 interface is bound to a maximum outgoing bandwidth, but can send to any other
-    GSL interface (well, satellite -> ground-station, and ground-station -> satellite) in
-    range. ("free") There is no reciprocation of the bandwidth asserted.
-
-    "only_over_isls"
-    It calculates a forwarding state, which is essentially a single shortest path.
-    It only considers paths which go over the inter-satellite network, and does not make use of ground
-    stations relay. This means that every path looks like:
-    (src gs) - (sat) - (sat) - ... - (sat) - (dst gs)
-
+    每个地面站最多使用 3 个不同的卫星进行上/下行
+    每个接口独立带宽、独立连接，不会出现同一颗卫星占多个接口的情况
     """
-
     if enable_verbose_logs:
-        print("\nALGORITHM: FREE ONE ONLY OVER ISLS")
+        print("\nALGORITHM: FREE THREE PER GS OVER ISLS (3 interfaces per GS)")
 
-    # Check the graph
-    if sat_net_graph_only_satellites_with_isls.number_of_nodes() != len(satellites):
-        raise ValueError("Number of nodes in the graph does not match the number of satellites")
-    for sid in range(len(satellites)):
-        for n in sat_net_graph_only_satellites_with_isls.neighbors(sid):
-            if n >= len(satellites):
-                raise ValueError("Graph cannot contain satellite-to-ground-station links")
+    num_satellites = len(satellites)
+    num_ground_stations = len(ground_stations)
 
-    #################################
-    # BANDWIDTH STATE
-    #
+    # ==================== 1. 为每个地面站选最多 3 3 颗最近的卫星 ====================
+    gs_to_selected_sats = []  # 长度 = num_ground_stations，每个元素是 [(dist, sid), ...] 最多3个
+    for gid in range(num_ground_stations):
+        candidates = ground_station_satellites_in_range[gid]  # [(dist, sid), ...]
+        # 按距离排序，取前 3（如果不足 3 就全取）
+        candidates_sorted = sorted(candidates, key=lambda x: x[0])[:3]
+        gs_to_selected_sats.append(candidates_sorted)
 
-    # There is only one GSL interface for each node (pre-condition), which as-such will get the entire bandwidth
-    output_filename = output_dynamic_state_dir + "/gsl_if_bandwidth_" + str(time_since_epoch_ns) + ".txt"
+        if enable_verbose_logs:
+            print(f"  GS {gid} selected {len(candidates_sorted)} satellites: {[sid for _, sid in candidates_sorted]}")
+
+    # ==================== 2. 计算每个被选中的 GSL 接口的带宽 ====================
+    # 统计每颗卫星被多少个地面站选中（用于公平分配带宽）
+    sat_selected_count = [0] * num_satellites
+    for selected_list in gs_to_selected_sats:
+        for _, sid in selected_list:
+            sat_selected_count[sid] += 1
+
+    # 写带宽文件
+    output_bw_file = output_dynamic_state_dir + f"/gsl_if_bandwidth_{time_since_epoch_ns}.txt"
     if enable_verbose_logs:
-        print("  > Writing interface bandwidth state to: " + output_filename)
-    with open(output_filename, "w+") as f_out:
-        if time_since_epoch_ns == 0:
-            for node_id in range(len(satellites)):
-                f_out.write("%d,%d,%f\n"
-                            % (node_id, num_isls_per_sat[node_id],
-                               list_gsl_interfaces_info[node_id]["aggregate_max_bandwidth"]))
-            for node_id in range(len(satellites), len(satellites) + len(ground_stations)):
-                f_out.write("%d,%d,%f\n"
-                            % (node_id, 0, list_gsl_interfaces_info[node_id]["aggregate_max_bandwidth"]))
+        print("  > Writing gsl_if_bandwidth to:", output_bw_file)
+    with open(output_bw_file, "w") as f:
+        # 卫星侧：每个卫星的 1 个 GSL 接口带宽 = 1.0 / 被多少个 GS 选中
+        for sid in range(num_satellites):
+            bw = 1.0 / sat_selected_count[sid] if sat_selected_count[sid] > 0 else 1.0
+            f.write(f"{sid},{num_isls_per_sat[sid]},{bw:.6f}\n")
 
-    #################################
-    # FORWARDING STATE
-    #
+        # 地面站侧：3 个接口平分 3.0 的聚合带宽 → 每个 1.0
+        # 但只有被选中的接口才有带宽，未被选中的给 0（或者 1.0 用于清空队列）
+        for gid in range(num_ground_stations):
+            selected = gs_to_selected_sats[gid]
+            for local_if_idx in range(3):
+                if local_if_idx < len(selected):
+                    f.write(f"{num_satellites + gid},{local_if_idx},1.000000\n")
+                else:
+                    f.write(f"{num_satellites + gid},{local_if_idx},0.000000\n")  # 或 1.0 用于快速清空
 
-    # Previous forwarding state (to only write delta)
-    prev_fstate = None
-    if prev_output is not None:
-        prev_fstate = prev_output["fstate"]
+    # ==================== 3. 计算转发状态 ====================
+    prev_fstate = prev_output["fstate"] if prev_output else None if prev_output else None
 
-    # GID to satellite GSL interface index
-    gid_to_sat_gsl_if_idx = [0] * len(ground_stations)  # (Only one GSL interface per satellite, so the first)
+    # 关键：把 ground_station_satellites_in_range_candidates 替换成我们刚选好的最多 3 个
+    # gid_to_sat_gsl_if_idx 仍然是 [0,1,2]（因为每个 GS 有 3 个接口，编号 0/1/2）
+    gid_to_sat_gsl_if_idx = [0, 1, 2]  # 每个 GS 的 3 个接口依次对应第 0/1/2 个选中的卫星
 
-    # Forwarding state using shortest paths
     fstate = calculate_fstate_shortest_path_without_gs_relaying(
         output_dynamic_state_dir,
         time_since_epoch_ns,
-        len(satellites),
-        len(ground_stations),
+        num_satellites,
+        num_ground_stations,
         sat_net_graph_only_satellites_with_isls,
         num_isls_per_sat,
         gid_to_sat_gsl_if_idx,
-        ground_station_satellites_in_range,
+        gs_to_selected_sats,                 # ← 这里替换成我们精选的列表
         sat_neighbor_to_if,
         prev_fstate,
         enable_verbose_logs
     )
 
-    if enable_verbose_logs:
-        print("")
-
-    return {
-        "fstate": fstate
-    }
+    return {"fstate": fstate}

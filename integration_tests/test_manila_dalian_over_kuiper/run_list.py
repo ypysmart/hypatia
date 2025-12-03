@@ -62,3 +62,23 @@ def get_tcp_run_list():
         ]
 
     return run_list
+def get_quic_run_list():
+    run_list = []
+    for p in chosen_pairs:
+        run_list += [
+            {
+                "name": p[0] + "_" + str(p[1]) + "_to_" + str(p[2]) + "_quic",
+                "satellite_network": p[4],
+                "dynamic_state": dynamic_state,
+                "dynamic_state_update_interval_ns": dynamic_state_update_interval_ns,
+                "simulation_end_time_ns": simulation_end_time_ns,
+                "data_rate_megabit_per_s": 10.0,
+                "queue_size_pkt": 100,
+                "enable_isl_utilization_tracking": enable_isl_utilization_tracking,
+                "isl_utilization_tracking_interval_ns": isl_utilization_tracking_interval_ns,
+                "from_id": p[1],
+                "to_id": p[2],
+                "enable_quic_flow_scheduler": True,  # 确保启用
+            },
+        ]
+    return run_list
