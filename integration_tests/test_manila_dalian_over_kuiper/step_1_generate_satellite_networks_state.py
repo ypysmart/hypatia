@@ -88,7 +88,7 @@ for dynamic_state_algorithm in [
 
     # Specific outcomes
     output_generated_data_dir = "temp/gen_data"
-    num_threads = 1
+    num_threads = 6
     time_step_ms = 100
     duration_s = 200
 
@@ -173,75 +173,25 @@ for dynamic_state_algorithm in [
 
     # TLEs (taken from Kuiper-610 first shell)
     print("Generating TLEs...")
-    with open(output_generated_data_dir + "/" + name + "/tles.txt", "w+") as f_out:
-        f_out.write("1 17\n")  # Pretend it's one orbit with 17 satellites
-        f_out.write("Kuiper-630 0\n")  # 183
-        f_out.write("1 00184U 00000ABC 00001.00000000  .00000000  00000-0  00000+0 0    06\n")
-        f_out.write("2 00184  51.9000  52.9412 0000001   0.0000 142.9412 14.80000000    00\n")
-        f_out.write("Kuiper-630 1\n")  # 184
-        f_out.write("1 00185U 00000ABC 00001.00000000  .00000000  00000-0  00000+0 0    07\n")
-        f_out.write("2 00185  51.9000  52.9412 0000001   0.0000 153.5294 14.80000000    07\n")
-        f_out.write("Kuiper-630 2\n")  # 215
-        f_out.write("1 00216U 00000ABC 00001.00000000  .00000000  00000-0  00000+0 0    02\n")
-        f_out.write("2 00216  51.9000  63.5294 0000001   0.0000 116.4706 14.80000000    04\n")
-        f_out.write("Kuiper-630 3\n")  # 216
-        f_out.write("1 00217U 00000ABC 00001.00000000  .00000000  00000-0  00000+0 0    03\n")
-        f_out.write("2 00217  51.9000  63.5294 0000001   0.0000 127.0588 14.80000000    01\n")
-        f_out.write("Kuiper-630 4\n")  # 217
-        f_out.write("1 00218U 00000ABC 00001.00000000  .00000000  00000-0  00000+0 0    04\n")
-        f_out.write("2 00218  51.9000  63.5294 0000001   0.0000 137.6471 14.80000000    00\n")
-        f_out.write("Kuiper-630 5\n")  # 218
-        f_out.write("1 00219U 00000ABC 00001.00000000  .00000000  00000-0  00000+0 0    05\n")
-        f_out.write("2 00219  51.9000  63.5294 0000001   0.0000 148.2353 14.80000000    08\n")
-        f_out.write("Kuiper-630 6\n")  # 249
-        f_out.write("1 00250U 00000ABC 00001.00000000  .00000000  00000-0  00000+0 0    00\n")
-        f_out.write("2 00250  51.9000  74.1176 0000001   0.0000 121.7647 14.80000000    02\n")
-        f_out.write("Kuiper-630 7\n")  # 250
-        f_out.write("1 00251U 00000ABC 00001.00000000  .00000000  00000-0  00000+0 0    01\n")
-        f_out.write("2 00251  51.9000  74.1176 0000001   0.0000 132.3529 14.80000000    00\n")
-        f_out.write("Kuiper-630 8\n")  # 615
-        f_out.write("1 00616U 00000ABC 00001.00000000  .00000000  00000-0  00000+0 0    06\n")
-        f_out.write("2 00616  51.9000 190.5882 0000001   0.0000  31.7647 14.80000000    05\n")
-        f_out.write("Kuiper-630 9\n")  # 616
-        f_out.write("1 00617U 00000ABC 00001.00000000  .00000000  00000-0  00000+0 0    07\n")
-        f_out.write("2 00617  51.9000 190.5882 0000001   0.0000  42.3529 14.80000000    03\n")
-        f_out.write("Kuiper-630 10\n")  # 647
-        f_out.write("1 00648U 00000ABC 00001.00000000  .00000000  00000-0  00000+0 0    01\n")
-        f_out.write("2 00648  51.9000 201.1765 0000001   0.0000  15.8824 14.80000000    09\n")
-        f_out.write("Kuiper-630 11\n")  # 648
-        f_out.write("1 00649U 00000ABC 00001.00000000  .00000000  00000-0  00000+0 0    02\n")
-        f_out.write("2 00649  51.9000 201.1765 0000001   0.0000  26.4706 14.80000000    07\n")
-        f_out.write("Kuiper-630 12\n")  # 649
-        f_out.write("1 00650U 00000ABC 00001.00000000  .00000000  00000-0  00000+0 0    04\n")
-        f_out.write("2 00650  51.9000 201.1765 0000001   0.0000  37.0588 14.80000000    05\n")
-        f_out.write("Kuiper-630 13\n")  # 650
-        f_out.write("1 00651U 00000ABC 00001.00000000  .00000000  00000-0  00000+0 0    05\n")
-        f_out.write("2 00651  51.9000 201.1765 0000001   0.0000  47.6471 14.80000000    04\n")
-        f_out.write("Kuiper-630 14\n")  # 682
-        f_out.write("1 00683U 00000ABC 00001.00000000  .00000000  00000-0  00000+0 0    00\n")
-        f_out.write("2 00683  51.9000 211.7647 0000001   0.0000  21.1765 14.80000000    08\n")
-        f_out.write("Kuiper-630 15\n")  # 683
-        f_out.write("1 00684U 00000ABC 00001.00000000  .00000000  00000-0  00000+0 0    01\n")
-        f_out.write("2 00684  51.9000 211.7647 0000001   0.0000  31.7647 14.80000000    05\n")
-        f_out.write("Kuiper-630 16\n")  # 684
-        f_out.write("1 00685U 00000ABC 00001.00000000  .00000000  00000-0  00000+0 0    02\n")
-        f_out.write("2 00685  51.9000 211.7647 0000001   0.0000  42.3529 14.80000000    03\n")
-
+   # ==================== TLEs：改成完整 1156 颗 ====================
+    # 你说你已经有完整的 tle.txt，直接把它拷贝进来
+    os.makedirs(output_generated_data_dir + "/" + name, exist_ok=True)
+    
+    # 直接复制你当前的完整 tle.txt（必须放在本目录下，文件名叫 tle_full_1156.txt 也可以改名）
+    local_shell.copy_file(
+        "templates/tles.txt",   # ←←←← 这里改成你的完整 TLE 文件名
+        output_generated_data_dir + "/" + name + "/tles.txt"
+    )
+    
     # ISLs
     print("Generating ISLs...")
     complete_list_isls = satgen.generate_plus_grid_isls(
-        output_generated_data_dir + "/" + name + "/isls_complete.temp.txt",
+        output_generated_data_dir + "/" + name + "/isls.txt",
         NUM_ORBS,
         NUM_SATS_PER_ORB,
         isl_shift=0,
         idx_offset=0
     )
-    with open(output_generated_data_dir + "/" + name + "/isls.txt", "w+") as f_out:
-        for isl in complete_list_isls:
-            if isl[0] in limited_satellite_set and isl[1] in limited_satellite_set:
-                f_out.write("%d %d\n" % (
-                    limited_satellite_idx_map[isl[0]], limited_satellite_idx_map[isl[1]]
-                ))
 
     # Description
     print("Generating description...")
@@ -268,7 +218,7 @@ for dynamic_state_algorithm in [
     print("Generating GSL interfaces info..")
     satgen.generate_simple_gsl_interfaces_info(
         output_generated_data_dir + "/" + name + "/gsl_interfaces_info.txt",
-        17,  # 17 satellites
+        1156,  # 1156 satellites
         len(ground_stations),
         gsl_interfaces_per_satellite,  # GSL interfaces per satellite
         1,  # (GSL) Interfaces per ground station

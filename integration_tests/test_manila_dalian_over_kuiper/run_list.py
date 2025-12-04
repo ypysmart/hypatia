@@ -36,8 +36,8 @@ dynamic_state = "dynamic_state_" + str(dynamic_state_update_interval_ms) + "ms_f
 full_satellite_network_isls = "reduced_kuiper_630_algorithm_free_one_only_over_isls"
 full_satellite_network_isls_sat_many = "reduced_kuiper_630_algorithm_free_gs_one_sat_many_only_over_isls"
 chosen_pairs = [
-    ("kuiper_630_isls_sat_one", 17, 18, "TcpNewReno", full_satellite_network_isls),
-    ("kuiper_630_isls_sat_many", 17, 18, "TcpNewReno", full_satellite_network_isls_sat_many),
+    ("kuiper_630_isls_sat_one", 1156,1157, "TcpNewReno", full_satellite_network_isls),
+    ("kuiper_630_isls_sat_many", 1156, 1157, "TcpNewReno", full_satellite_network_isls_sat_many),
 ]
 
 

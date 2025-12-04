@@ -79,9 +79,12 @@ for run in get_tcp_run_list():
     local_shell.sed_replace_in_file_plain(run_dir + "/schedule.csv", "[TO]", str(run["to_id"]))
 
 
+
+
+
 # QUIC runs
 for run in get_quic_run_list():
-    run_dir = "runs/" + run["name"]
+    run_dir ="temp/runs/"+ run["name"]
     local_shell.remove_force_recursive(run_dir)
     local_shell.make_full_dir(run_dir)
 
@@ -119,6 +122,7 @@ for run in get_quic_run_list():
     local_shell.copy_file("templates/template_quic_flow_schedule.csv", run_dir + "/quic_flow_schedule.csv")
     local_shell.sed_replace_in_file_plain(run_dir + "/quic_flow_schedule.csv", "[FROM]", str(run["from_id"]))
     local_shell.sed_replace_in_file_plain(run_dir + "/quic_flow_schedule.csv", "[TO]", str(run["to_id"]))
+
 
 # Print finish
 print("Success: generated ns-3 runs")
