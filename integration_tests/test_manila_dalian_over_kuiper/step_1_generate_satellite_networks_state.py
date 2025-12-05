@@ -205,25 +205,34 @@ for dynamic_state_algorithm in [
     ground_stations = satgen.read_ground_stations_extended(
         output_generated_data_dir + "/" + name + "/ground_stations.txt"
     )
-
+    
+    #py修改
     # GSL interfaces
     if dynamic_state_algorithm == "algorithm_free_one_only_over_isls":
         gsl_interfaces_per_satellite = 1
         gsl_satellite_max_agg_bandwidth = 1.0
+        gsl_gs_max_agg_bandwidth = 1.0  # GS原1.0
+        gsl_interfaces_per_gs = 1  # GS原1
     elif dynamic_state_algorithm == "algorithm_free_gs_one_sat_many_only_over_isls":
         gsl_interfaces_per_satellite = len(ground_stations)
         gsl_satellite_max_agg_bandwidth = len(ground_stations)
-    else:
-        raise ValueError("Unknown dynamic state algorithm: " + dynamic_state_algorithm)
+        gsl_gs_max_agg_bandwidth = 1.0
+        gsl_interfaces_per_gs = 1
+    else:  # 新算法或其他
+        gsl_interfaces_per_satellite = len(ground_stations) * 3  # 每个卫星有足够接口（例如2 GS * 3 = 6）
+        gsl_satellite_max_agg_bandwidth = len(ground_stations) * 3  # 聚合带宽匹配接口数
+        gsl_gs_max_agg_bandwidth = 3.0  # 每个GS聚合3.0
+        gsl_interfaces_per_gs = 3  # 每个GS有3个接口
+
     print("Generating GSL interfaces info..")
     satgen.generate_simple_gsl_interfaces_info(
         output_generated_data_dir + "/" + name + "/gsl_interfaces_info.txt",
-        1156,  # 1156 satellites
+        1156,  # 卫星数量
         len(ground_stations),
-        gsl_interfaces_per_satellite,  # GSL interfaces per satellite
-        1,  # (GSL) Interfaces per ground station
-        gsl_satellite_max_agg_bandwidth,  # Aggregate max. bandwidth satellite (unit unspecified)
-        1   # Aggregate max. bandwidth ground station (same unspecified unit)
+        gsl_interfaces_per_satellite,  # 每个卫星的GSL接口数
+        gsl_interfaces_per_gs,  # 每个地面站的接口数（改为3）
+        gsl_satellite_max_agg_bandwidth,  # 卫星聚合带宽
+        gsl_gs_max_agg_bandwidth  # 地面站聚合带宽（改为3.0）
     )
 
     # Forwarding state
