@@ -1,0 +1,2021 @@
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=2920
+tcbd->m_lastRtt=+148132510.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=11700
+tcbd->m_lastRtt=+157989948.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=20478
+tcbd->m_lastRtt=+161684197.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=29261
+tcbd->m_lastRtt=+187918657.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=32187
+tcbd->m_lastRtt=+162992376.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=40980
+tcbd->m_lastRtt=+166697955.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=49773
+tcbd->m_lastRtt=+170407537.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=58571
+tcbd->m_lastRtt=+170417145.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=67361
+tcbd->m_lastRtt=+174120318.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=76151
+tcbd->m_lastRtt=+177824157.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=84946
+tcbd->m_lastRtt=+207350370.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=90806
+tcbd->m_lastRtt=+203465915.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=90806
+tcbd->m_lastRtt=+216715051.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=45403
+tcbd->m_lastRtt=+211623418.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=45403
+tcbd->m_lastRtt=+196688062.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=45403
+tcbd->m_lastRtt=+174848074.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=45403
+tcbd->m_lastRtt=+201082408.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=45403
+tcbd->m_lastRtt=+222063051.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=45403
+tcbd->m_lastRtt=+245583763.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=22702
+tcbd->m_lastRtt=+206965813.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=22702
+tcbd->m_lastRtt=+156000247.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=22706
+tcbd->m_lastRtt=+161795278.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=22710
+tcbd->m_lastRtt=+140526742.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=22719
+tcbd->m_lastRtt=+142218259.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=22724
+tcbd->m_lastRtt=+145923836.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=22728
+tcbd->m_lastRtt=+137622421.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=22733
+tcbd->m_lastRtt=+141388670.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=22748
+tcbd->m_lastRtt=+137278185.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=22753
+tcbd->m_lastRtt=+139790975.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=22763
+tcbd->m_lastRtt=+139750845.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=22768
+tcbd->m_lastRtt=+137276268.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=22773
+tcbd->m_lastRtt=+137373051.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=22783
+tcbd->m_lastRtt=+141045914.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=22788
+tcbd->m_lastRtt=+141037245.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=22798
+tcbd->m_lastRtt=+140473726.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=22807
+tcbd->m_lastRtt=+143841835.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=22812
+tcbd->m_lastRtt=+137274769.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=22817
+tcbd->m_lastRtt=+140980354.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=22822
+tcbd->m_lastRtt=+137274709.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=22827
+tcbd->m_lastRtt=+140924753.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=22832
+tcbd->m_lastRtt=+137994270.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=22837
+tcbd->m_lastRtt=+144582557.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=22842
+tcbd->m_lastRtt=+137312007.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=22846
+tcbd->m_lastRtt=+140125360.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=22861
+tcbd->m_lastRtt=+137993547.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=22866
+tcbd->m_lastRtt=+140153101.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=22871
+tcbd->m_lastRtt=+144713332.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=22880
+tcbd->m_lastRtt=+137311042.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=22885
+tcbd->m_lastRtt=+137335213.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=22890
+tcbd->m_lastRtt=+137310910.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=22895
+tcbd->m_lastRtt=+137274404.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=22900
+tcbd->m_lastRtt=+137274222.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=22905
+tcbd->m_lastRtt=+140381165.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=22910
+tcbd->m_lastRtt=+155432322.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=22914
+tcbd->m_lastRtt=+154540353.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=22918
+tcbd->m_lastRtt=+139822392.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=22923
+tcbd->m_lastRtt=+139882022.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=22928
+tcbd->m_lastRtt=+138511969.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=22933
+tcbd->m_lastRtt=+140995047.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=22938
+tcbd->m_lastRtt=+139353863.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=22943
+tcbd->m_lastRtt=+139293991.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=22948
+tcbd->m_lastRtt=+137991239.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=22953
+tcbd->m_lastRtt=+137273613.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=22963
+tcbd->m_lastRtt=+137990841.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=22968
+tcbd->m_lastRtt=+137273346.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=22973
+tcbd->m_lastRtt=+137277256.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=22978
+tcbd->m_lastRtt=+137273024.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=22983
+tcbd->m_lastRtt=+137272911.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=22993
+tcbd->m_lastRtt=+137272540.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=23006
+tcbd->m_lastRtt=+138508240.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=23011
+tcbd->m_lastRtt=+138508041.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=23021
+tcbd->m_lastRtt=+137271947.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=23026
+tcbd->m_lastRtt=+140442905.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=23031
+tcbd->m_lastRtt=+143467157.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=23040
+tcbd->m_lastRtt=+140381974.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=23045
+tcbd->m_lastRtt=+139755531.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=23050
+tcbd->m_lastRtt=+138508771.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=23055
+tcbd->m_lastRtt=+137731165.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=23060
+tcbd->m_lastRtt=+138512436.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=23065
+tcbd->m_lastRtt=+137270743.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=23070
+tcbd->m_lastRtt=+140184289.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=23075
+tcbd->m_lastRtt=+138512112.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=23080
+tcbd->m_lastRtt=+140482337.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=23085
+tcbd->m_lastRtt=+138506310.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=23090
+tcbd->m_lastRtt=+140739844.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=23095
+tcbd->m_lastRtt=+137779284.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=23110
+tcbd->m_lastRtt=+140481737.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=23115
+tcbd->m_lastRtt=+154561838.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=23119
+tcbd->m_lastRtt=+141900727.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=23124
+tcbd->m_lastRtt=+137269293.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=23129
+tcbd->m_lastRtt=+140891898.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=23134
+tcbd->m_lastRtt=+138510637.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=23139
+tcbd->m_lastRtt=+142223419.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=23143
+tcbd->m_lastRtt=+137268941.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=23148
+tcbd->m_lastRtt=+139741629.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=23153
+tcbd->m_lastRtt=+139898583.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=23158
+tcbd->m_lastRtt=+137998031.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=23163
+tcbd->m_lastRtt=+144250567.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=23167
+tcbd->m_lastRtt=+143063371.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=23177
+tcbd->m_lastRtt=+137268124.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=23182
+tcbd->m_lastRtt=+137327878.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=23187
+tcbd->m_lastRtt=+137304271.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=23192
+tcbd->m_lastRtt=+139740376.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=23201
+tcbd->m_lastRtt=+141654097.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=23211
+tcbd->m_lastRtt=+138505006.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=23216
+tcbd->m_lastRtt=+138618812.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=23221
+tcbd->m_lastRtt=+152267233.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=23225
+tcbd->m_lastRtt=+139296495.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=23229
+tcbd->m_lastRtt=+142900416.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=23238
+tcbd->m_lastRtt=+137266704.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=23243
+tcbd->m_lastRtt=+137270624.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=23248
+tcbd->m_lastRtt=+163508183.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=23251
+tcbd->m_lastRtt=+139740051.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=23260
+tcbd->m_lastRtt=+163437862.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=23263
+tcbd->m_lastRtt=+138506106.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=23268
+tcbd->m_lastRtt=+137994790.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=23273
+tcbd->m_lastRtt=+137265937.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=23278
+tcbd->m_lastRtt=+137265841.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=23283
+tcbd->m_lastRtt=+138563992.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=23288
+tcbd->m_lastRtt=+137265636.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=23293
+tcbd->m_lastRtt=+165621749.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=23298
+tcbd->m_lastRtt=+137265394.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=23304
+tcbd->m_lastRtt=+138502920.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=23314
+tcbd->m_lastRtt=+140200364.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=23318
+tcbd->m_lastRtt=+137265016.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=23323
+tcbd->m_lastRtt=+138049774.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=23333
+tcbd->m_lastRtt=+139739046.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=23343
+tcbd->m_lastRtt=+137264517.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=23348
+tcbd->m_lastRtt=+137300770.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=23358
+tcbd->m_lastRtt=+140443504.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=23368
+tcbd->m_lastRtt=+138103097.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=23373
+tcbd->m_lastRtt=+137263893.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=23378
+tcbd->m_lastRtt=+139295085.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=23383
+tcbd->m_lastRtt=+138501266.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=23393
+tcbd->m_lastRtt=+137324199.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=23398
+tcbd->m_lastRtt=+141412110.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=23403
+tcbd->m_lastRtt=+138500921.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=23408
+tcbd->m_lastRtt=+139738461.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=23413
+tcbd->m_lastRtt=+143002419.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=23418
+tcbd->m_lastRtt=+143452631.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=23422
+tcbd->m_lastRtt=+139797365.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=23427
+tcbd->m_lastRtt=+146553852.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=23441
+tcbd->m_lastRtt=+139231316.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=23446
+tcbd->m_lastRtt=+137323106.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=23451
+tcbd->m_lastRtt=+141658403.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=23456
+tcbd->m_lastRtt=+138499899.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=23461
+tcbd->m_lastRtt=+137261448.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=23466
+tcbd->m_lastRtt=+137262160.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=23471
+tcbd->m_lastRtt=+138503525.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=23476
+tcbd->m_lastRtt=+138499402.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=23481
+tcbd->m_lastRtt=+144730941.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=23489
+tcbd->m_lastRtt=+137263660.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=23494
+tcbd->m_lastRtt=+142160330.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=23498
+tcbd->m_lastRtt=+140596007.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=23503
+tcbd->m_lastRtt=+138502804.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=23508
+tcbd->m_lastRtt=+143488775.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=23512
+tcbd->m_lastRtt=+140804956.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=23517
+tcbd->m_lastRtt=+141560480.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=23521
+tcbd->m_lastRtt=+138498578.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=23526
+tcbd->m_lastRtt=+141709625.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=23530
+tcbd->m_lastRtt=+162262398.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=23533
+tcbd->m_lastRtt=+142053507.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=23537
+tcbd->m_lastRtt=+142278035.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=23542
+tcbd->m_lastRtt=+139230921.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=23547
+tcbd->m_lastRtt=+137296872.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=23551
+tcbd->m_lastRtt=+137260384.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=23561
+tcbd->m_lastRtt=+162346936.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=23564
+tcbd->m_lastRtt=+137259214.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=23569
+tcbd->m_lastRtt=+140934366.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=23573
+tcbd->m_lastRtt=+141770218.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=23577
+tcbd->m_lastRtt=+140586463.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=23590
+tcbd->m_lastRtt=+137259526.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=23595
+tcbd->m_lastRtt=+144285807.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=23599
+tcbd->m_lastRtt=+141536343.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=23603
+tcbd->m_lastRtt=+137258499.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=23608
+tcbd->m_lastRtt=+140250472.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=23612
+tcbd->m_lastRtt=+139220158.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=23616
+tcbd->m_lastRtt=+138499014.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=23620
+tcbd->m_lastRtt=+139676652.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=23624
+tcbd->m_lastRtt=+137295213.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=23628
+tcbd->m_lastRtt=+137258753.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=23632
+tcbd->m_lastRtt=+137258703.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=23636
+tcbd->m_lastRtt=+137997873.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=23641
+tcbd->m_lastRtt=+137258656.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=23648
+tcbd->m_lastRtt=+142194131.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=23653
+tcbd->m_lastRtt=+137331738.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=23658
+tcbd->m_lastRtt=+138497452.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=23662
+tcbd->m_lastRtt=+139736675.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=23666
+tcbd->m_lastRtt=+138556427.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=23674
+tcbd->m_lastRtt=+147468218.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=23682
+tcbd->m_lastRtt=+141773871.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=23691
+tcbd->m_lastRtt=+139745026.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=23695
+tcbd->m_lastRtt=+138511381.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=23699
+tcbd->m_lastRtt=+138510500.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=23704
+tcbd->m_lastRtt=+153562481.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=23707
+tcbd->m_lastRtt=+137986997.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=23716
+tcbd->m_lastRtt=+141023366.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=23720
+tcbd->m_lastRtt=+141139639.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=23724
+tcbd->m_lastRtt=+137986722.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=23728
+tcbd->m_lastRtt=+139753224.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=23733
+tcbd->m_lastRtt=+137986634.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=23737
+tcbd->m_lastRtt=+138631285.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=23741
+tcbd->m_lastRtt=+153985803.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=23745
+tcbd->m_lastRtt=+142834285.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=23749
+tcbd->m_lastRtt=+137986290.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=23753
+tcbd->m_lastRtt=+137268746.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=23757
+tcbd->m_lastRtt=+138542709.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=23761
+tcbd->m_lastRtt=+137268649.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=23765
+tcbd->m_lastRtt=+162588036.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=23768
+tcbd->m_lastRtt=+140464296.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=23771
+tcbd->m_lastRtt=+141027226.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=23775
+tcbd->m_lastRtt=+137974315.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=23783
+tcbd->m_lastRtt=+137304598.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=23787
+tcbd->m_lastRtt=+143457777.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=23791
+tcbd->m_lastRtt=+163542181.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=23795
+tcbd->m_lastRtt=+137267940.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=23799
+tcbd->m_lastRtt=+141679354.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=23803
+tcbd->m_lastRtt=+137303480.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=23807
+tcbd->m_lastRtt=+140979777.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=23811
+tcbd->m_lastRtt=+138505361.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=23815
+tcbd->m_lastRtt=+137270901.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=23819
+tcbd->m_lastRtt=+137985056.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=23823
+tcbd->m_lastRtt=+139689065.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=23827
+tcbd->m_lastRtt=+137984103.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=23831
+tcbd->m_lastRtt=+166877302.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=23834
+tcbd->m_lastRtt=+139746522.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=23839
+tcbd->m_lastRtt=+140463134.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=23843
+tcbd->m_lastRtt=+141004432.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=23847
+tcbd->m_lastRtt=+139223824.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=23851
+tcbd->m_lastRtt=+139223774.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=23855
+tcbd->m_lastRtt=+140462819.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=23863
+tcbd->m_lastRtt=+140458730.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=23867
+tcbd->m_lastRtt=+140398851.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=23871
+tcbd->m_lastRtt=+139206283.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=23875
+tcbd->m_lastRtt=+137266754.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=23880
+tcbd->m_lastRtt=+141226737.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=23884
+tcbd->m_lastRtt=+162463492.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=23892
+tcbd->m_lastRtt=+142215274.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=23896
+tcbd->m_lastRtt=+140460717.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=23900
+tcbd->m_lastRtt=+141666856.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=23904
+tcbd->m_lastRtt=+138503928.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=23908
+tcbd->m_lastRtt=+140512517.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=23916
+tcbd->m_lastRtt=+137266090.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=23920
+tcbd->m_lastRtt=+138456439.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=23924
+tcbd->m_lastRtt=+140951237.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=23928
+tcbd->m_lastRtt=+138418014.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=23936
+tcbd->m_lastRtt=+139792160.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=23940
+tcbd->m_lastRtt=+140394415.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=23944
+tcbd->m_lastRtt=+140464752.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=23948
+tcbd->m_lastRtt=+142940756.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=23952
+tcbd->m_lastRtt=+143511241.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=23960
+tcbd->m_lastRtt=+156671124.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=23963
+tcbd->m_lastRtt=+137982960.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=23966
+tcbd->m_lastRtt=+152846893.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=23970
+tcbd->m_lastRtt=+137986792.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=23974
+tcbd->m_lastRtt=+139801168.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=23978
+tcbd->m_lastRtt=+140356983.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=23986
+tcbd->m_lastRtt=+140977126.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=23990
+tcbd->m_lastRtt=+139272966.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=23998
+tcbd->m_lastRtt=+138501751.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=24006
+tcbd->m_lastRtt=+141298648.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=24010
+tcbd->m_lastRtt=+137982263.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=24014
+tcbd->m_lastRtt=+144734767.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=24018
+tcbd->m_lastRtt=+142183663.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=24022
+tcbd->m_lastRtt=+157174984.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=24025
+tcbd->m_lastRtt=+137982079.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=24028
+tcbd->m_lastRtt=+139743783.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=24036
+tcbd->m_lastRtt=+142252034.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=24040
+tcbd->m_lastRtt=+141011236.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=24044
+tcbd->m_lastRtt=+138505999.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=24052
+tcbd->m_lastRtt=+138501857.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=24068
+tcbd->m_lastRtt=+138452816.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=24080
+tcbd->m_lastRtt=+138501542.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=24088
+tcbd->m_lastRtt=+138041960.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=24092
+tcbd->m_lastRtt=+138501396.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=24096
+tcbd->m_lastRtt=+139737393.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=24104
+tcbd->m_lastRtt=+138565941.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=24108
+tcbd->m_lastRtt=+138501241.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=24112
+tcbd->m_lastRtt=+139738775.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=24116
+tcbd->m_lastRtt=+144777582.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=24120
+tcbd->m_lastRtt=+139738679.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=24128
+tcbd->m_lastRtt=+140266780.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=24132
+tcbd->m_lastRtt=+142721917.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=24136
+tcbd->m_lastRtt=+137984805.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=24140
+tcbd->m_lastRtt=+137262506.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=24144
+tcbd->m_lastRtt=+137263231.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=24148
+tcbd->m_lastRtt=+137323868.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=24152
+tcbd->m_lastRtt=+140466224.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=24156
+tcbd->m_lastRtt=+142901416.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=24160
+tcbd->m_lastRtt=+157953416.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=24163
+tcbd->m_lastRtt=+139713309.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=24167
+tcbd->m_lastRtt=+140972652.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=24171
+tcbd->m_lastRtt=+140604464.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=24175
+tcbd->m_lastRtt=+137984377.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=24179
+tcbd->m_lastRtt=+141809834.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=24191
+tcbd->m_lastRtt=+137323440.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=24195
+tcbd->m_lastRtt=+140456998.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=24199
+tcbd->m_lastRtt=+137938577.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=24203
+tcbd->m_lastRtt=+162975357.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=24210
+tcbd->m_lastRtt=+141141964.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=24214
+tcbd->m_lastRtt=+137262560.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=24218
+tcbd->m_lastRtt=+139377032.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=24222
+tcbd->m_lastRtt=+143035947.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=24233
+tcbd->m_lastRtt=+162358658.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=24236
+tcbd->m_lastRtt=+140328239.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=24240
+tcbd->m_lastRtt=+141482622.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=24244
+tcbd->m_lastRtt=+140454910.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=24248
+tcbd->m_lastRtt=+140466092.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=24256
+tcbd->m_lastRtt=+141025392.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=24264
+tcbd->m_lastRtt=+137262092.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=24268
+tcbd->m_lastRtt=+138499664.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=24272
+tcbd->m_lastRtt=+140298684.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=24276
+tcbd->m_lastRtt=+137262003.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=24280
+tcbd->m_lastRtt=+142250378.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=24288
+tcbd->m_lastRtt=+139900180.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=24292
+tcbd->m_lastRtt=+142122653.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=24296
+tcbd->m_lastRtt=+138529703.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=24300
+tcbd->m_lastRtt=+137261799.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=24304
+tcbd->m_lastRtt=+137260971.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=24308
+tcbd->m_lastRtt=+137261758.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=24312
+tcbd->m_lastRtt=+139249785.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=24316
+tcbd->m_lastRtt=+138523940.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=24320
+tcbd->m_lastRtt=+150273522.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=24327
+tcbd->m_lastRtt=+141561885.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=24331
+tcbd->m_lastRtt=+138499158.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=24339
+tcbd->m_lastRtt=+137261526.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=24343
+tcbd->m_lastRtt=+139278956.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=24347
+tcbd->m_lastRtt=+139770632.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=24351
+tcbd->m_lastRtt=+137261415.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=24355
+tcbd->m_lastRtt=+141746091.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=24359
+tcbd->m_lastRtt=+145937900.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=24363
+tcbd->m_lastRtt=+140186708.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=24367
+tcbd->m_lastRtt=+137261327.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=24375
+tcbd->m_lastRtt=+152460892.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=24378
+tcbd->m_lastRtt=+139736435.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=24382
+tcbd->m_lastRtt=+138498835.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=24386
+tcbd->m_lastRtt=+141625225.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=24390
+tcbd->m_lastRtt=+141023388.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=24394
+tcbd->m_lastRtt=+139217846.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=24398
+tcbd->m_lastRtt=+154674061.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=24401
+tcbd->m_lastRtt=+139736281.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=24405
+tcbd->m_lastRtt=+137311466.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=24409
+tcbd->m_lastRtt=+137261054.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=24413
+tcbd->m_lastRtt=+139225722.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=24417
+tcbd->m_lastRtt=+139268070.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=24421
+tcbd->m_lastRtt=+137260991.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=24425
+tcbd->m_lastRtt=+139736123.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=24429
+tcbd->m_lastRtt=+143539606.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=24433
+tcbd->m_lastRtt=+140962727.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=24437
+tcbd->m_lastRtt=+141705437.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=24441
+tcbd->m_lastRtt=+144115934.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=24445
+tcbd->m_lastRtt=+140240164.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=24449
+tcbd->m_lastRtt=+137260821.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=24453
+tcbd->m_lastRtt=+137260783.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=24457
+tcbd->m_lastRtt=+139737852.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=24461
+tcbd->m_lastRtt=+138975134.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=24465
+tcbd->m_lastRtt=+139023264.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=24469
+tcbd->m_lastRtt=+141690971.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=24473
+tcbd->m_lastRtt=+137260683.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=24477
+tcbd->m_lastRtt=+142227869.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=24481
+tcbd->m_lastRtt=+140454113.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=24489
+tcbd->m_lastRtt=+141738454.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=24493
+tcbd->m_lastRtt=+141015069.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=24497
+tcbd->m_lastRtt=+139037552.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=24501
+tcbd->m_lastRtt=+142256150.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=24505
+tcbd->m_lastRtt=+144683369.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=24509
+tcbd->m_lastRtt=+139124444.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=24513
+tcbd->m_lastRtt=+137260513.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=24517
+tcbd->m_lastRtt=+139275428.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=24521
+tcbd->m_lastRtt=+138562747.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=24525
+tcbd->m_lastRtt=+139512721.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=24529
+tcbd->m_lastRtt=+142983520.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=24533
+tcbd->m_lastRtt=+139702880.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=24537
+tcbd->m_lastRtt=+142216855.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=24541
+tcbd->m_lastRtt=+140001324.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=24545
+tcbd->m_lastRtt=+137977863.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=24549
+tcbd->m_lastRtt=+141597607.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=24553
+tcbd->m_lastRtt=+137977849.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=24557
+tcbd->m_lastRtt=+138497950.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=24561
+tcbd->m_lastRtt=+143486359.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=24565
+tcbd->m_lastRtt=+142999269.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=24569
+tcbd->m_lastRtt=+137980994.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=24573
+tcbd->m_lastRtt=+140504171.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=24581
+tcbd->m_lastRtt=+138497882.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=24585
+tcbd->m_lastRtt=+140972257.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=24589
+tcbd->m_lastRtt=+141630670.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=24597
+tcbd->m_lastRtt=+137977718.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=24601
+tcbd->m_lastRtt=+143657064.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=24605
+tcbd->m_lastRtt=+139755216.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=24609
+tcbd->m_lastRtt=+137977686.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=24613
+tcbd->m_lastRtt=+141535946.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=24617
+tcbd->m_lastRtt=+139532015.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=24621
+tcbd->m_lastRtt=+139735395.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=24625
+tcbd->m_lastRtt=+142264186.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=24632
+tcbd->m_lastRtt=+140453637.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=24639
+tcbd->m_lastRtt=+140236691.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=24643
+tcbd->m_lastRtt=+137260145.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=24647
+tcbd->m_lastRtt=+139778021.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=24651
+tcbd->m_lastRtt=+137260137.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=24655
+tcbd->m_lastRtt=+164842820.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=24661
+tcbd->m_lastRtt=+138497720.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=24665
+tcbd->m_lastRtt=+138893051.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=24673
+tcbd->m_lastRtt=+142208099.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=24677
+tcbd->m_lastRtt=+138497708.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=24689
+tcbd->m_lastRtt=+142273555.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=24693
+tcbd->m_lastRtt=+144571825.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=24697
+tcbd->m_lastRtt=+140060900.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=24701
+tcbd->m_lastRtt=+138497680.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=24709
+tcbd->m_lastRtt=+138497680.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=24713
+tcbd->m_lastRtt=+137923925.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=24717
+tcbd->m_lastRtt=+142292483.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=24721
+tcbd->m_lastRtt=+137256861.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=24725
+tcbd->m_lastRtt=+142208875.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=24733
+tcbd->m_lastRtt=+163557568.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=24740
+tcbd->m_lastRtt=+137260068.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=24744
+tcbd->m_lastRtt=+142114068.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=24748
+tcbd->m_lastRtt=+139735277.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=24760
+tcbd->m_lastRtt=+157320890.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=24763
+tcbd->m_lastRtt=+137260084.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=24767
+tcbd->m_lastRtt=+140506365.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=24771
+tcbd->m_lastRtt=+139797554.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=24775
+tcbd->m_lastRtt=+142436122.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=24779
+tcbd->m_lastRtt=+139735294.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=24783
+tcbd->m_lastRtt=+141592756.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=24787
+tcbd->m_lastRtt=+137260100.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=24795
+tcbd->m_lastRtt=+146748748.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=24798
+tcbd->m_lastRtt=+137300517.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=24806
+tcbd->m_lastRtt=+140455995.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=24810
+tcbd->m_lastRtt=+141570782.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=24814
+tcbd->m_lastRtt=+139775740.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=24818
+tcbd->m_lastRtt=+140196807.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=24826
+tcbd->m_lastRtt=+142254162.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=24830
+tcbd->m_lastRtt=+141034029.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=24834
+tcbd->m_lastRtt=+137260167.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=24838
+tcbd->m_lastRtt=+139253888.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=24842
+tcbd->m_lastRtt=+138500978.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=24846
+tcbd->m_lastRtt=+144734990.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=24850
+tcbd->m_lastRtt=+137976876.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=24854
+tcbd->m_lastRtt=+138497816.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=24858
+tcbd->m_lastRtt=+140247354.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=24866
+tcbd->m_lastRtt=+141523087.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=24870
+tcbd->m_lastRtt=+138497052.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=24874
+tcbd->m_lastRtt=+140899436.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=24878
+tcbd->m_lastRtt=+137260265.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=24882
+tcbd->m_lastRtt=+138497891.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=24886
+tcbd->m_lastRtt=+138547476.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=24890
+tcbd->m_lastRtt=+140511368.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=24894
+tcbd->m_lastRtt=+139791362.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=24898
+tcbd->m_lastRtt=+144225003.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=24902
+tcbd->m_lastRtt=+137977826.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=24906
+tcbd->m_lastRtt=+140330473.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=24910
+tcbd->m_lastRtt=+139217060.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=24914
+tcbd->m_lastRtt=+142931453.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=24918
+tcbd->m_lastRtt=+140971600.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=24922
+tcbd->m_lastRtt=+144121083.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=24930
+tcbd->m_lastRtt=+139217123.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=24934
+tcbd->m_lastRtt=+142941005.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=24938
+tcbd->m_lastRtt=+142083535.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=24942
+tcbd->m_lastRtt=+139734887.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=24946
+tcbd->m_lastRtt=+140401600.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=24950
+tcbd->m_lastRtt=+141752403.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=24954
+tcbd->m_lastRtt=+142936398.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=24958
+tcbd->m_lastRtt=+138870939.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=24966
+tcbd->m_lastRtt=+137763867.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=24970
+tcbd->m_lastRtt=+140434585.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=24974
+tcbd->m_lastRtt=+142379980.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=24978
+tcbd->m_lastRtt=+139217321.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=24982
+tcbd->m_lastRtt=+137259867.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=24986
+tcbd->m_lastRtt=+137260666.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=24990
+tcbd->m_lastRtt=+140409902.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=24994
+tcbd->m_lastRtt=+141654183.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=25006
+tcbd->m_lastRtt=+137297170.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=25010
+tcbd->m_lastRtt=+137780909.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=25014
+tcbd->m_lastRtt=+139627793.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=25021
+tcbd->m_lastRtt=+138599520.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=25025
+tcbd->m_lastRtt=+142251659.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=25029
+tcbd->m_lastRtt=+139163698.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=25033
+tcbd->m_lastRtt=+155364940.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=25036
+tcbd->m_lastRtt=+138496930.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=25040
+tcbd->m_lastRtt=+139718164.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=25044
+tcbd->m_lastRtt=+142344965.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=25048
+tcbd->m_lastRtt=+139736209.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=25056
+tcbd->m_lastRtt=+138747023.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=25060
+tcbd->m_lastRtt=+143100094.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=25068
+tcbd->m_lastRtt=+138569536.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=25072
+tcbd->m_lastRtt=+141698619.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=25076
+tcbd->m_lastRtt=+139789167.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=25084
+tcbd->m_lastRtt=+142984261.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=25088
+tcbd->m_lastRtt=+137978683.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=25092
+tcbd->m_lastRtt=+138502848.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=25096
+tcbd->m_lastRtt=+142214070.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=25100
+tcbd->m_lastRtt=+138042650.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=25112
+tcbd->m_lastRtt=+142989218.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=25120
+tcbd->m_lastRtt=+140264761.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=25124
+tcbd->m_lastRtt=+137348257.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=25128
+tcbd->m_lastRtt=+137261527.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=25140
+tcbd->m_lastRtt=+141797411.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=25144
+tcbd->m_lastRtt=+137979054.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=25148
+tcbd->m_lastRtt=+139732002.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=25152
+tcbd->m_lastRtt=+137978327.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=25159
+tcbd->m_lastRtt=+138502528.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=25163
+tcbd->m_lastRtt=+137979210.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=25171
+tcbd->m_lastRtt=+137979259.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=25175
+tcbd->m_lastRtt=+137261018.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=25187
+tcbd->m_lastRtt=+141680314.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=25190
+tcbd->m_lastRtt=+143098511.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=25197
+tcbd->m_lastRtt=+141492575.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=25200
+tcbd->m_lastRtt=+138499650.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=25204
+tcbd->m_lastRtt=+139741334.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=25211
+tcbd->m_lastRtt=+137979639.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=25215
+tcbd->m_lastRtt=+142616462.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=25222
+tcbd->m_lastRtt=+137262240.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=25226
+tcbd->m_lastRtt=+138044420.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=25230
+tcbd->m_lastRtt=+157025755.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=25233
+tcbd->m_lastRtt=+138563825.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=25237
+tcbd->m_lastRtt=+143393206.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=25240
+tcbd->m_lastRtt=+141199356.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=25244
+tcbd->m_lastRtt=+139964946.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=25248
+tcbd->m_lastRtt=+138575618.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=25252
+tcbd->m_lastRtt=+139302240.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=25260
+tcbd->m_lastRtt=+139737806.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=25264
+tcbd->m_lastRtt=+137301876.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=25272
+tcbd->m_lastRtt=+138500299.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=25276
+tcbd->m_lastRtt=+139796195.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=25280
+tcbd->m_lastRtt=+137979450.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=25284
+tcbd->m_lastRtt=+139734859.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=25292
+tcbd->m_lastRtt=+139274774.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=25300
+tcbd->m_lastRtt=+143215163.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=25308
+tcbd->m_lastRtt=+146253777.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=25311
+tcbd->m_lastRtt=+139863637.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=25318
+tcbd->m_lastRtt=+143448239.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=25325
+tcbd->m_lastRtt=+141613613.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=25329
+tcbd->m_lastRtt=+138500860.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=25333
+tcbd->m_lastRtt=+140459221.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=25337
+tcbd->m_lastRtt=+139698960.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=25348
+tcbd->m_lastRtt=+137263482.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=25352
+tcbd->m_lastRtt=+138036187.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=25356
+tcbd->m_lastRtt=+138974856.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=25360
+tcbd->m_lastRtt=+139646768.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=25364
+tcbd->m_lastRtt=+142982712.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=25367
+tcbd->m_lastRtt=+140457134.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=25373
+tcbd->m_lastRtt=+137981225.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=25380
+tcbd->m_lastRtt=+138046764.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=25384
+tcbd->m_lastRtt=+140459754.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=25387
+tcbd->m_lastRtt=+137263956.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=25391
+tcbd->m_lastRtt=+140976766.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=25400
+tcbd->m_lastRtt=+137264107.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=25404
+tcbd->m_lastRtt=+137673879.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=25411
+tcbd->m_lastRtt=+140460085.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=25418
+tcbd->m_lastRtt=+138330259.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=25422
+tcbd->m_lastRtt=+138983875.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=25426
+tcbd->m_lastRtt=+140460324.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=25430
+tcbd->m_lastRtt=+145970456.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=25433
+tcbd->m_lastRtt=+145278954.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=25436
+tcbd->m_lastRtt=+142308281.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=25440
+tcbd->m_lastRtt=+138502191.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=25444
+tcbd->m_lastRtt=+140460511.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=25447
+tcbd->m_lastRtt=+139380882.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=25450
+tcbd->m_lastRtt=+137264762.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=25454
+tcbd->m_lastRtt=+141021201.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=25457
+tcbd->m_lastRtt=+144127122.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=25460
+tcbd->m_lastRtt=+145410450.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=25463
+tcbd->m_lastRtt=+137291404.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=25467
+tcbd->m_lastRtt=+139221685.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=25471
+tcbd->m_lastRtt=+137265058.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=25475
+tcbd->m_lastRtt=+137325816.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=25479
+tcbd->m_lastRtt=+137265173.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=25483
+tcbd->m_lastRtt=+139337752.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=25487
+tcbd->m_lastRtt=+137886707.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=25491
+tcbd->m_lastRtt=+139724895.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=25494
+tcbd->m_lastRtt=+138693409.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=25497
+tcbd->m_lastRtt=+141142782.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=25500
+tcbd->m_lastRtt=+139220588.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=25503
+tcbd->m_lastRtt=+139740750.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=25506
+tcbd->m_lastRtt=+139897652.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=25510
+tcbd->m_lastRtt=+145510212.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=25513
+tcbd->m_lastRtt=+142278354.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=25517
+tcbd->m_lastRtt=+139220804.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=25520
+tcbd->m_lastRtt=+138501788.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=25524
+tcbd->m_lastRtt=+138503445.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=25528
+tcbd->m_lastRtt=+138503509.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=25532
+tcbd->m_lastRtt=+137793273.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=25536
+tcbd->m_lastRtt=+138035453.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=25540
+tcbd->m_lastRtt=+164273110.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=25542
+tcbd->m_lastRtt=+137983541.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=25545
+tcbd->m_lastRtt=+137946800.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=25549
+tcbd->m_lastRtt=+138048323.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=25553
+tcbd->m_lastRtt=+137326900.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=25557
+tcbd->m_lastRtt=+142874325.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=25561
+tcbd->m_lastRtt=+145406997.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=25564
+tcbd->m_lastRtt=+137266393.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=25568
+tcbd->m_lastRtt=+138537237.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=25571
+tcbd->m_lastRtt=+137266506.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=25575
+tcbd->m_lastRtt=+140978564.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=25578
+tcbd->m_lastRtt=+137266639.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=25581
+tcbd->m_lastRtt=+137270666.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=25584
+tcbd->m_lastRtt=+137989014.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=25588
+tcbd->m_lastRtt=+137317191.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=25591
+tcbd->m_lastRtt=+137327519.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=25595
+tcbd->m_lastRtt=+139746104.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=25602
+tcbd->m_lastRtt=+138955174.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=25608
+tcbd->m_lastRtt=+137266400.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=25612
+tcbd->m_lastRtt=+138394592.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=25615
+tcbd->m_lastRtt=+137267285.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=25622
+tcbd->m_lastRtt=+137267406.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=25626
+tcbd->m_lastRtt=+137328149.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=25632
+tcbd->m_lastRtt=+146637526.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=25635
+tcbd->m_lastRtt=+142449728.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=25639
+tcbd->m_lastRtt=+143508666.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=25646
+tcbd->m_lastRtt=+137267852.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=25650
+tcbd->m_lastRtt=+137267967.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=25656
+tcbd->m_lastRtt=+139331698.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=25660
+tcbd->m_lastRtt=+144176017.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=25663
+tcbd->m_lastRtt=+141099998.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=25667
+tcbd->m_lastRtt=+139985846.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=25671
+tcbd->m_lastRtt=+140457415.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=25674
+tcbd->m_lastRtt=+165558826.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=25676
+tcbd->m_lastRtt=+139741199.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=25683
+tcbd->m_lastRtt=+138037952.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=25686
+tcbd->m_lastRtt=+137986099.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=25689
+tcbd->m_lastRtt=+137268658.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=25693
+tcbd->m_lastRtt=+141036650.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=25701
+tcbd->m_lastRtt=+138567129.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=25704
+tcbd->m_lastRtt=+142219276.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=25707
+tcbd->m_lastRtt=+140399982.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=25710
+tcbd->m_lastRtt=+144132952.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=25716
+tcbd->m_lastRtt=+139805134.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=25722
+tcbd->m_lastRtt=+138506927.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=25726
+tcbd->m_lastRtt=+138556521.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=25729
+tcbd->m_lastRtt=+138377086.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=25732
+tcbd->m_lastRtt=+139460988.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=25735
+tcbd->m_lastRtt=+138609407.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=25738
+tcbd->m_lastRtt=+138507214.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=25741
+tcbd->m_lastRtt=+158420138.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=25744
+tcbd->m_lastRtt=+139749001.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=25747
+tcbd->m_lastRtt=+139809667.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=25750
+tcbd->m_lastRtt=+139745091.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=25753
+tcbd->m_lastRtt=+137987468.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=25756
+tcbd->m_lastRtt=+139749303.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=25765
+tcbd->m_lastRtt=+139745513.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=25768
+tcbd->m_lastRtt=+137330998.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=25771
+tcbd->m_lastRtt=+137269656.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=25774
+tcbd->m_lastRtt=+138052701.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=25777
+tcbd->m_lastRtt=+139745797.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=25780
+tcbd->m_lastRtt=+137270651.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=25783
+tcbd->m_lastRtt=+164122333.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=25785
+tcbd->m_lastRtt=+139744420.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=25792
+tcbd->m_lastRtt=+163952229.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=25798
+tcbd->m_lastRtt=+137988536.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=25801
+tcbd->m_lastRtt=+139750356.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=25807
+tcbd->m_lastRtt=+139223904.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=25810
+tcbd->m_lastRtt=+137271343.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=25813
+tcbd->m_lastRtt=+137988121.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=25819
+tcbd->m_lastRtt=+140793234.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=25822
+tcbd->m_lastRtt=+137271670.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=25825
+tcbd->m_lastRtt=+139033746.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=25828
+tcbd->m_lastRtt=+139211899.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=25834
+tcbd->m_lastRtt=+139226252.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=25837
+tcbd->m_lastRtt=+139357171.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=25847
+tcbd->m_lastRtt=+138509835.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=25850
+tcbd->m_lastRtt=+142944926.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=25853
+tcbd->m_lastRtt=+138509963.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=25856
+tcbd->m_lastRtt=+137989928.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=25859
+tcbd->m_lastRtt=+141709218.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=25862
+tcbd->m_lastRtt=+140541578.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=25865
+tcbd->m_lastRtt=+141179604.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=25871
+tcbd->m_lastRtt=+139748004.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=25874
+tcbd->m_lastRtt=+139303433.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=25877
+tcbd->m_lastRtt=+139783856.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=25880
+tcbd->m_lastRtt=+139745930.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=25883
+tcbd->m_lastRtt=+140469136.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=25886
+tcbd->m_lastRtt=+137272530.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=25890
+tcbd->m_lastRtt=+142382002.0ns
+
+pathId=2 subflow_tcb=0x556e25495c20 cWnd=25899
+tcbd->m_lastRtt=+140928663.0ns

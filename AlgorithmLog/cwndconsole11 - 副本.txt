@@ -1,0 +1,657 @@
+Waf: Entering directory `/home/ypy/hypatia/ns3-sat-sim/simulator/build/debug_all'
+[2037/2989] Compiling contrib/quic/model/quic-socket-base.cc
+[2044/2989] Compiling contrib/quic/model/quic-l4-protocol.cc
+[2064/2989] Compiling contrib/satellite-network/model/topology-satellite-network.cc
+[2937/2989] Linking build/debug_all/lib/libns3.32-satellite-network-debug.so
+[2938/2989] Linking build/debug_all/lib/libns3.32-satellite-network-test-debug.so
+[2939/2989] Linking build/debug_all/lib/libns3.32-quic-debug.so
+[2940/2989] Linking build/debug_all/lib/libns3.32-quic-test-debug.so
+[2941/2989] Linking build/debug_all/scratch/subdir/subdir
+[2942/2989] Linking build/debug_all/scratch/main_satnet/main_satnet
+[2943/2989] Linking build/debug_all/scratch/scratch-simulator
+[2944/2989] Linking build/debug_all/utils/ns3.32-test-runner-debug
+Waf: Leaving directory `/home/ypy/hypatia/ns3-sat-sim/simulator/build/debug_all'
+Build commands will be stored in build/debug_all/compile_commands.json
+'build' finished successfully (8.939s)
+BASIC SIMULATION START
+  > Date... Sunday December  7, 2025
+  > Time... 01:22:24
+
+CONFIGURE RUN DIRECTORY
+  > Run directory: ../../integration_tests/test_manila_dalian_over_kuiper/temp/runs/kuiper_630_isls_gs_many_sat_many_1156_to_1157_quic
+  > Logs directory: ../../integration_tests/test_manila_dalian_over_kuiper/temp/runs/kuiper_630_isls_gs_many_sat_many_1156_to_1157_quic/logs_ns3
+
+CONFIGURATION
+-----
+KEY                                       VALUE
+dynamic_state_update_interval_ns          100000000
+enable_isl_utilization_tracking           true
+enable_quic_flow_scheduler                true
+gsl_data_rate_megabit_per_s               10.0
+gsl_max_queue_size_pkts                   100
+isl_data_rate_megabit_per_s               10.0
+isl_max_queue_size_pkts                   100
+isl_utilization_tracking_interval_ns      1000000000
+quic_flow_enable_logging_for_quic_flow_ids  set(0)
+quic_flow_schedule_filename               quic_flow_schedule.csv
+satellite_network_dir                     ../../gen_data/reduced_kuiper_630_algorithm_free_gs_many_sat_many_only_over_isls
+satellite_network_routes_dir              ../../gen_data/reduced_kuiper_630_algorithm_free_gs_many_sat_many_only_over_isls/dynamic_state_100ms_for_200s
+simulation_end_time_ns                    200000000000
+simulation_seed                           123456789
+tcp_socket_type                           TcpNewReno
+
+CONFIGURE SIMULATION
+  > Distributed is not enabled
+  > System id........ 0
+  > No. of systems... 1
+  > Seed............. 123456789
+  > Duration......... 200.00 s (200000000000 ns)
+
+TCP OPTIMIZATION BASIC
+  > Clock granularity.......... 1 ns
+  > Initial CWND............... 10 packets
+  > Send buffer size........... 33.554 MB
+  > Receive buffer size........ 33.554 MB
+  > Segment size............... 1380 byte
+  > Timestamp option........... enabled
+  > SACK option................ enabled
+  > Window scaling option...... enabled
+  > Pacing..................... disabled
+
+SATELLITE NETWORK
+  > Number of satellites........ 1156
+  > Number of ground stations... 2
+  > Number of nodes............. 1158
+  > Installed Internet stacks
+  > Reading and creating ISLs
+    >> ISL data rate........ 10 Mbit/s
+    >> ISL max queue size... 100 packets
+    >> Created 2312 ISL(s)
+  > Creating GSLs
+    >> GSL data rate........ 10 Mbit/s
+    >> GSL max queue size... 100 packets
+文件:../../integration_tests/test_manila_dalian_over_kuiper/temp/runs/kuiper_630_isls_gs_many_sat_many_1156_to_1157_quic/../../gen_data/reduced_kuiper_630_algorithm_free_gs_many_sat_many_only_over_isls/gsl_interfaces_info.txt    >> Read all GSL interfaces information for the 1158 nodes
+    >> Number of GSL interfaces to create... 6942
+    >> Finished install GSL interfaces (interfaces, network devices, one shared channel)
+    >> Finished installing traffic control layer qdisc which will be removed later
+    >> Assigning IP addresses...
+       (with many interfaces, this can take long due to an inefficient IP assignment conflict checker)
+       Progress (as there are more entries, it becomes slower):
+       - 10.01% (t = 0.69 s, update took 0.69 s)
+       - 20.02% (t = 1.51 s, update took 0.82 s)
+       - 30.03% (t = 2.47 s, update took 0.96 s)
+       - 40.05% (t = 3.58 s, update took 1.11 s)
+       - 50.06% (t = 4.81 s, update took 1.23 s)
+       - 60.07% (t = 6.18 s, update took 1.37 s)
+       - 70.08% (t = 7.70 s, update took 1.52 s)
+       - 80.09% (t = 9.37 s, update took 1.67 s)
+       - 90.10% (t = 11.22 s, update took 1.85 s)
+       - 100.00% (t = 13.20 s, update took 1.98 s)
+    >> Removing traffic control layers (qdiscs)...
+    >> Finished removing GSL queueing disciplines
+    >> GSL interfaces are setup
+  > Populating ARP caches
+
+SETUP SINGLE FORWARDING ROUTING
+  > Create initial single forwarding state
+  > Setting the routing arbiter on each node
+  > Forward state update interval: 100000000ns
+  > Perform first forwarding state load for t=0
+
+SETUP GSL IF BANDWIDTH HELPER
+  > GSL interface bandwidth update interval: 100000000ns
+  > Perform first GSL interface bandwidth setting for t=0
+
+ypyQuic FLOW SCHEDULER
+  >quic flow scheduler is enabled
+  > Read schedule (total flow start events: 1)
+
+UDP BURST SCHEDULER
+  > Not enabled explicitly, so disabled
+
+PINGMESH SCHEDULER
+  > Not enabled explicitly, so disabled
+
+SIMULATION
+Running the simulation for 200.00 simulation seconds...
+--- Debug Info for Node 1156 ---
+Number of interfaces on node 1156: 4
+  Interface 0 has 1 address(es):
+    Address index 0: 127.0.0.1
+  Interface 1 has 1 address(es):
+    Address index 0: 10.36.32.1
+  Interface 2 has 1 address(es):
+    Address index 0: 10.36.33.1
+  Interface 3 has 1 address(es):
+    Address index 0: 10.36.34.1
+---------------------------------试试看
+--- Debug Info for Node 1157 ---
+Number of interfaces on node 1157: 4
+  Interface 0 has 1 address(es):
+    Address index 0: 127.0.0.1
+  Interface 1 has 1 address(es):
+    Address index 0: 10.36.35.1
+  Interface 2 has 1 address(es):
+    Address index 0: 10.36.36.1
+  Interface 3 has 1 address(es):
+    Address index 0: 10.36.37.1
+---------------------------------
+hhhhhhhhhhhhns3::UdpSocketImpl
+UdpSend的udpSocket：0x55cd14a03eb0  flags：0
+UdpSocketImpl的udpSocket：0x55cd12b225d0  flags：0
+Path0sendNumber > 0:0availableWindow > 0：2920        m_txBuffer->AppSize ():0 SendDataPacket Schedule Close at time 2
+hhhhhhhhhhhhns3::UdpSocketImpl
+UdpSend的udpSocket：0x55cd149967e0  flags：0
+UdpSocketImpl的udpSocket：0x55cd12b175e0  flags：0
+hhhhhhhhhhhhns3::UdpSocketImpl
+UdpSend的udpSocket：0x55cd149967e0  flags：0
+UdpSocketImpl的udpSocket：0x55cd12b175e0  flags：0
+Path0sendNumber > 0:0availableWindow > 0：2920        m_txBuffer->AppSize ():0 SendDataPacket Schedule Close at time 2.13063
+hhhhhhhhhhhhns3::UdpSocketImpl
+UdpSend的udpSocket：0x55cd14a03eb0  flags：0
+UdpSocketImpl的udpSocket：0x55cd12b013f0  flags：0
+Path0sendNumber > 0:0availableWindow > 0：2920        m_txBuffer->AppSize ():0 SendDataPacket Schedule Close at time 2.19612
+hhhhhhhhhhhhns3::UdpSocketImpl
+UdpSend的udpSocket：0x55cd14a03eb0  flags：0
+UdpSocketImpl的udpSocket：0x55cd3f20da20  flags：0
+Path0sendNumber > 0:2availableWindow > 0：2920        m_txBuffer->AppSize ():39997944 SendDataPacket Schedule Close at time 2.19617
+hhhhhhhhhhhhns3::UdpSocketImpl
+UdpSend的udpSocket：0x55cd14a03eb0  flags：0
+UdpSocketImpl的udpSocket：0x55cd12af1d20  flags：0
+hhhhhhhhhhhhns3::UdpSocketImpl
+UdpSend的udpSocket：0x55cd14a03eb0  flags：0
+UdpSocketImpl的udpSocket：0x55cd12b0a2c0  flags：0
+hhhhhhhhhhhhns3::UdpSocketImpl
+UdpSend的udpSocket：0x55cd14a03eb0  flags：0
+UdpSocketImpl的udpSocket：0x55cd1203a8e0  flags：0
+hhhhhhhhhhhhns3::UdpSocketImpl
+UdpSend的udpSocket：0x55cd14a03eb0  flags：0
+UdpSocketImpl的udpSocket：0x55cd120395c0  flags：0
+我感觉要处问题了addrNum：  4   m_enableMultipath：  1
+Send ADD_ADDRESS packet with header 
+hhhhhhhhhhhhns3::UdpSocketImpl
+UdpSend的udpSocket：0x55cd149967e0  flags：0
+UdpSocketImpl的udpSocket：0x55cd1348ea20  flags：0
+本地新增IP：  10.36.36.1   本地新增端口 ： 49154   pathid ： 49154
+Send ADD_ADDRESS packet with header 
+hhhhhhhhhhhhns3::UdpSocketImpl
+UdpSend的udpSocket：0x55cd149967e0  flags：0
+UdpSocketImpl的udpSocket：0x55cd12ff02e0  flags：0
+本地新增IP：  10.36.37.1   本地新增端口 ： 49155   pathid ： 49155
+hhhhhhhhhhhhns3::UdpSocketImpl
+UdpSend的udpSocket：0x55cd149967e0  flags：0
+UdpSocketImpl的udpSocket：0x55cd135b8210  flags：0
+Path0sendNumber > 0:0availableWindow > 0：2920        m_txBuffer->AppSize ():0 SendDataPacket Schedule Close at time 2.33437
+hhhhhhhhhhhhns3::UdpSocketImpl
+UdpSend的udpSocket：0x55cd149967e0  flags：0
+UdpSocketImpl的udpSocket：0x55cd1351d210  flags：0
+hhhhhhhhhhhhns3::UdpSocketImpl
+UdpSend的udpSocket：0x55cd149967e0  flags：0
+UdpSocketImpl的udpSocket：0x55cd135bfa10  flags：0
+hhhhhhhhhhhhns3::UdpSocketImpl
+UdpSend的udpSocket：0x55cd149967e0  flags：0
+UdpSocketImpl的udpSocket：0x55cd12fe8ae0  flags：0
+Received ADD_ADDRESS OnReceivedAddAddressFrame 
+hhhhhhhhhhhhns3::UdpSocketImpl
+UdpSend的udpSocket：0x55cd14995980  flags：0
+UdpSocketImpl的udpSocket：0x55cd131ffa10  flags：0
+Received ADD_ADDRESS OnReceivedAddAddressFrame 
+hhhhhhhhhhhhns3::UdpSocketImpl
+UdpSend的udpSocket：0x55cd3f2b6660  flags：0
+UdpSocketImpl的udpSocket：0x55cd135bfa10  flags：0
+hhhhhhhhhhhhns3::UdpSocketImpl
+UdpSend的udpSocket：0x55cd14a03eb0  flags：0
+UdpSocketImpl的udpSocket：0x55cd135bfa10  flags：0
+0x55cd149fd430   In slow start，，tcbd->m_cWnd:5584
+0x55cd149fd430   In slow start，，tcbd->m_cWnd:8248
+0x55cd149fd430   In slow start，，tcbd->m_cWnd:10912
+0x55cd149fd430   In slow start，，tcbd->m_cWnd:13832
+0x55cd149fd430   In slow start，，tcbd->m_cWnd:16752
+0x55cd149fd430   In slow start，，tcbd->m_cWnd:19681
+Path0sendNumber > 0:12availableWindow > 0：18212        m_txBuffer->AppSize ():39992124 SendDataPacket Schedule Close at time 2.40772
+hhhhhhhhhhhhns3::UdpSocketImpl
+UdpSend的udpSocket：0x55cd14a03eb0  flags：0
+UdpSocketImpl的udpSocket：0x55cd12036680  flags：0
+hhhhhhhhhhhhns3::UdpSocketImpl
+UdpSend的udpSocket：0x55cd14a03eb0  flags：0
+UdpSocketImpl的udpSocket：0x55cd1202b4e0  flags：0
+hhhhhhhhhhhhns3::UdpSocketImpl
+UdpSend的udpSocket：0x55cd14a03eb0  flags：0
+UdpSocketImpl的udpSocket：0x55cd1201edc0  flags：0
+hhhhhhhhhhhhns3::UdpSocketImpl
+UdpSend的udpSocket：0x55cd14a03eb0  flags：0
+UdpSocketImpl的udpSocket：0x55cd12003550  flags：0
+hhhhhhhhhhhhns3::UdpSocketImpl
+UdpSend的udpSocket：0x55cd14a03eb0  flags：0
+UdpSocketImpl的udpSocket：0x55cd1238f290  flags：0
+hhhhhhhhhhhhns3::UdpSocketImpl
+UdpSend的udpSocket：0x55cd14a03eb0  flags：0
+UdpSocketImpl的udpSocket：0x55cd13126210  flags：0
+hhhhhhhhhhhhns3::UdpSocketImpl
+UdpSend的udpSocket：0x55cd14a03eb0  flags：0
+UdpSocketImpl的udpSocket：0x55cd14b9ed90  flags：0
+hhhhhhhhhhhhns3::UdpSocketImpl
+UdpSend的udpSocket：0x55cd14a03eb0  flags：0
+UdpSocketImpl的udpSocket：0x55cd14e165c0  flags：0
+hhhhhhhhhhhhns3::UdpSocketImpl
+UdpSend的udpSocket：0x55cd14a03eb0  flags：0
+UdpSocketImpl的udpSocket：0x55cd16451e00  flags：0
+hhhhhhhhhhhhns3::UdpSocketImpl
+UdpSend的udpSocket：0x55cd14a03eb0  flags：0
+UdpSocketImpl的udpSocket：0x55cd3ea168f0  flags：0
+hhhhhhhhhhhhns3::UdpSocketImpl
+UdpSend的udpSocket：0x55cd14a03eb0  flags：0
+UdpSocketImpl的udpSocket：0x55cd3f20e060  flags：0
+hhhhhhhhhhhhns3::UdpSocketImpl
+UdpSend的udpSocket：0x55cd14a03eb0  flags：0
+UdpSocketImpl的udpSocket：0x55cd3f20dca0  flags：0
+Path0sendNumber > 0:0availableWindow > 0：603        m_txBuffer->AppSize ():39999689 SendDataPacket Schedule Close at time 2.40772
+0x55cd149fd430   In slow start，，tcbd->m_cWnd:22610
+Path0sendNumber > 0:3availableWindow > 0：5001        m_txBuffer->AppSize ():39999689 SendDataPacket Schedule Close at time 2.42773
+hhhhhhhhhhhhns3::UdpSocketImpl
+UdpSend的udpSocket：0x55cd14a03eb0  flags：0
+UdpSocketImpl的udpSocket：0x55cd3f20d8e0  flags：0
+hhhhhhhhhhhhns3::UdpSocketImpl
+UdpSend的udpSocket：0x55cd14a03eb0  flags：0
+UdpSocketImpl的udpSocket：0x55cd3f20d520  flags：0
+hhhhhhhhhhhhns3::UdpSocketImpl
+UdpSend的udpSocket：0x55cd14a03eb0  flags：0
+UdpSocketImpl的udpSocket：0x55cd3f20d2a0  flags：0
+Path0sendNumber > 0:0availableWindow > 0：594        m_txBuffer->AppSize ():39999740 SendDataPacket Schedule Close at time 2.42773
+hhhhhhhhhhhhns3::UdpSocketImpl
+UdpSend的udpSocket：0x55cd14a03eb0  flags：0
+UdpSocketImpl的udpSocket：0x55cd1356aa10  flags：0
+hhhhhhhhhhhhns3::UdpSocketImpl
+UdpSend的udpSocket：0x55cd14a03eb0  flags：0
+UdpSocketImpl的udpSocket：0x55cd3f20cee0  flags：0
+Path0sendNumber > 0:0availableWindow > 0：0        m_txBuffer->AppSize ():39998285 SendDataPacket Schedule Close at time 2.44276
+Path0sendNumber > 0:0availableWindow > 0：0        m_txBuffer->AppSize ():39999757 SendDataPacket Schedule Close at time 2.44276
+hhhhhhhhhhhhns3::UdpSocketImpl
+UdpSend的udpSocket：0x55cd14a03eb0  flags：0
+UdpSocketImpl的udpSocket：0x55cd3f20cb20  flags：0
+hhhhhhhhhhhhns3::UdpSocketImpl
+UdpSend的udpSocket：0x55cd14a03eb0  flags：0
+UdpSocketImpl的udpSocket：0x55cd40576660  flags：0
+Received PATH_CHALLENGE OnReceivedPathChallengeFrame 
+hhhhhhhhhhhhns3::UdpSocketImpl
+UdpSend的udpSocket：0x55cd149918a0  flags：0
+UdpSocketImpl的udpSocket：0x55cd40581390  flags：0
+Received PATH_CHALLENGE OnReceivedPathChallengeFrame 
+hhhhhhhhhhhhns3::UdpSocketImpl
+UdpSend的udpSocket：0x55cd3f2b4c80  flags：0
+UdpSocketImpl的udpSocket：0x55cd4056c040  flags：0
+hhhhhhhhhhhhns3::UdpSocketImpl
+UdpSend的udpSocket：0x55cd149967e0  flags：0
+UdpSocketImpl的udpSocket：0x55cd40570700  flags：0
+hhhhhhhhhhhhns3::UdpSocketImpl
+UdpSend的udpSocket：0x55cd149918a0  flags：0
+UdpSocketImpl的udpSocket：0x55cd3f2b3500  flags：0
+hhhhhhhhhhhhns3::UdpSocketImpl
+UdpSend的udpSocket：0x55cd3f2b4c80  flags：0
+UdpSocketImpl的udpSocket：0x55cd40581610  flags：0
+hhhhhhhhhhhhns3::UdpSocketImpl
+UdpSend的udpSocket：0x55cd149967e0  flags：0
+UdpSocketImpl的udpSocket：0x55cd3f211b20  flags：0
+hhhhhhhhhhhhns3::UdpSocketImpl
+UdpSend的udpSocket：0x55cd149967e0  flags：0
+UdpSocketImpl的udpSocket：0x55cd4056b5a0  flags：0
+hhhhhhhhhhhhns3::UdpSocketImpl
+UdpSend的udpSocket：0x55cd149967e0  flags：0
+UdpSocketImpl的udpSocket：0x55cd405652a0  flags：0
+hhhhhhhhhhhhns3::UdpSocketImpl
+UdpSend的udpSocket：0x55cd149967e0  flags：0
+UdpSocketImpl的udpSocket：0x55cd3f2b2210  flags：0
+hhhhhhhhhhhhns3::UdpSocketImpl
+UdpSend的udpSocket：0x55cd149967e0  flags：0
+UdpSocketImpl的udpSocket：0x55cd40583dd0  flags：0
+hhhhhhhhhhhhns3::UdpSocketImpl
+UdpSend的udpSocket：0x55cd149967e0  flags：0
+UdpSocketImpl的udpSocket：0x55cd40576b10  flags：0
+[PATH_CHALLENGE_ACTIVE 时间=2560797224ns PathId=1 子流状态改为 ACTIVE (本地IP: 10.36.33.1)
+[PATH_CHALLENGE_ACTIVE 时间=2560845224ns PathId=2 子流状态改为 ACTIVE (本地IP: 10.36.34.1)
+hhhhhhhhhhhhns3::UdpSocketImpl
+UdpSend的udpSocket：0x55cd149967e0  flags：0
+UdpSocketImpl的udpSocket：0x55cd405652a0  flags：0
+Path0sendNumber > 0:0availableWindow > 0：0        m_txBuffer->AppSize ():39998302 SendDataPacket Schedule Close at time 2.57752
+Path1sendNumber > 0:2availableWindow > 0：2920        m_txBuffer->AppSize ():39998302 SendDataPacket Schedule Close at time 2.57752
+hhhhhhhhhhhhns3::UdpSocketImpl
+UdpSend的udpSocket：0x55cd14995980  flags：0
+UdpSocketImpl的udpSocket：0x55cd3f20c760  flags：0
+Path2sendNumber > 0:0availableWindow > 0：2920        m_txBuffer->AppSize ():39996847 SendDataPacket Schedule Close at time 2.57752
+Path0sendNumber > 0:0availableWindow > 0：0        m_txBuffer->AppSize ():39999791 SendDataPacket Schedule Close at time 2.57752
+Path1sendNumber > 0:0availableWindow > 0：1451        m_txBuffer->AppSize ():39999791 SendDataPacket Schedule Close at time 2.57752
+Path2sendNumber > 0:2availableWindow > 0：2920        m_txBuffer->AppSize ():39999791 SendDataPacket Schedule Close at time 2.57752
+hhhhhhhhhhhhns3::UdpSocketImpl
+UdpSend的udpSocket：0x55cd3f2b6660  flags：0
+UdpSocketImpl的udpSocket：0x55cd3f20c3a0  flags：0
+hhhhhhhhhhhhns3::UdpSocketImpl
+UdpSend的udpSocket：0x55cd14995980  flags：0
+UdpSocketImpl的udpSocket：0x55cd40568a60  flags：0
+hhhhhhhhhhhhns3::UdpSocketImpl
+UdpSend的udpSocket：0x55cd3f2b6660  flags：0
+UdpSocketImpl的udpSocket：0x55cd13439a20  flags：0
+Path0sendNumber > 0:0availableWindow > 0：0        m_txBuffer->AppSize ():39998336 SendDataPacket Schedule Close at time 2.58589
+Path1sendNumber > 0:0availableWindow > 0：1451        m_txBuffer->AppSize ():39998336 SendDataPacket Schedule Close at time 2.58589
+Path2sendNumber > 0:0availableWindow > 0：1454        m_txBuffer->AppSize ():39998336 SendDataPacket Schedule Close at time 2.58589
+Path0sendNumber > 0:0availableWindow > 0：0        m_txBuffer->AppSize ():39999808 SendDataPacket Schedule Close at time 2.58589
+Path1sendNumber > 0:0availableWindow > 0：1451        m_txBuffer->AppSize ():39999808 SendDataPacket Schedule Close at time 2.58589
+Path2sendNumber > 0:0availableWindow > 0：1454        m_txBuffer->AppSize ():39999808 SendDataPacket Schedule Close at time 2.58589
+Path0sendNumber > 0:0availableWindow > 0：0        m_txBuffer->AppSize ():39999808 SendDataPacket Schedule Close at time 2.58594
+Path1sendNumber > 0:0availableWindow > 0：1451        m_txBuffer->AppSize ():39999808 SendDataPacket Schedule Close at time 2.58594
+Path2sendNumber > 0:0availableWindow > 0：1454        m_txBuffer->AppSize ():39999808 SendDataPacket Schedule Close at time 2.58594
+Path0sendNumber > 0:0availableWindow > 0：0        m_txBuffer->AppSize ():39999808 SendDataPacket Schedule Close at time 2.58594
+Path1sendNumber > 0:0availableWindow > 0：1451        m_txBuffer->AppSize ():39999808 SendDataPacket Schedule Close at time 2.58594
+Path2sendNumber > 0:0availableWindow > 0：1454        m_txBuffer->AppSize ():39999808 SendDataPacket Schedule Close at time 2.58594
+hhhhhhhhhhhhns3::UdpSocketImpl
+UdpSend的udpSocket：0x55cd149967e0  flags：0
+UdpSocketImpl的udpSocket：0x55cd3f2b3570  flags：0
+Path0sendNumber > 0:0availableWindow > 0：0        m_txBuffer->AppSize ():39999808 SendDataPacket Schedule Close at time 2.59254
+Path1sendNumber > 0:0availableWindow > 0：1451        m_txBuffer->AppSize ():39999808 SendDataPacket Schedule Close at time 2.59254
+Path2sendNumber > 0:0availableWindow > 0：1454        m_txBuffer->AppSize ():39999808 SendDataPacket Schedule Close at time 2.59254
+Path0sendNumber > 0:0availableWindow > 0：0        m_txBuffer->AppSize ():39999808 SendDataPacket Schedule Close at time 2.59254
+Path1sendNumber > 0:0availableWindow > 0：1451        m_txBuffer->AppSize ():39999808 SendDataPacket Schedule Close at time 2.59254
+Path2sendNumber > 0:0availableWindow > 0：1454        m_txBuffer->AppSize ():39999808 SendDataPacket Schedule Close at time 2.59254
+hhhhhhhhhhhhns3::UdpSocketImpl
+UdpSend的udpSocket：0x55cd14995980  flags：0
+UdpSocketImpl的udpSocket：0x55cd3f20bfe0  flags：0
+hhhhhhhhhhhhns3::UdpSocketImpl
+UdpSend的udpSocket：0x55cd3f2b6660  flags：0
+UdpSocketImpl的udpSocket：0x55cd3f20bd60  flags：0
+Path0sendNumber > 0:0availableWindow > 0：0        m_txBuffer->AppSize ():39996898 SendDataPacket Schedule Close at time 2.59599
+Path1sendNumber > 0:0availableWindow > 0：0        m_txBuffer->AppSize ():39996898 SendDataPacket Schedule Close at time 2.59599
+Path2sendNumber > 0:0availableWindow > 0：0        m_txBuffer->AppSize ():39996898 SendDataPacket Schedule Close at time 2.59599
+hhhhhhhhhhhhns3::UdpSocketImpl
+UdpSend的udpSocket：0x55cd14a03eb0  flags：0
+UdpSocketImpl的udpSocket：0x55cd3f213a60  flags：0
+Path0sendNumber > 0:0availableWindow > 0：0        m_txBuffer->AppSize ():39999842 SendDataPacket Schedule Close at time 2.59599
+Path1sendNumber > 0:0availableWindow > 0：0        m_txBuffer->AppSize ():39999842 SendDataPacket Schedule Close at time 2.59599
+Path2sendNumber > 0:0availableWindow > 0：0        m_txBuffer->AppSize ():39999842 SendDataPacket Schedule Close at time 2.59599
+hhhhhhhhhhhhns3::UdpSocketImpl
+UdpSend的udpSocket：0x55cd14995980  flags：0
+UdpSocketImpl的udpSocket：0x55cd3f20b9a0  flags：0
+hhhhhhhhhhhhns3::UdpSocketImpl
+UdpSend的udpSocket：0x55cd3f2b6660  flags：0
+UdpSocketImpl的udpSocket：0x55cd3f20b5e0  flags：0
+hhhhhhhhhhhhns3::UdpSocketImpl
+UdpSend的udpSocket：0x55cd14995980  flags：0
+UdpSocketImpl的udpSocket：0x55cd3f20dca0  flags：0
+hhhhhhhhhhhhns3::UdpSocketImpl
+UdpSend的udpSocket：0x55cd3f2b6660  flags：0
+UdpSocketImpl的udpSocket：0x55cd3f20dca0  flags：0
+0x55cd149fd430   In slow start，，tcbd->m_cWnd:25537
+0x55cd149fd430   In slow start，，tcbd->m_cWnd:28464
+0x55cd149fd430   In slow start，，tcbd->m_cWnd:31391
+Path0sendNumber > 0:0availableWindow > 0：10842        m_txBuffer->AppSize ():39996932 SendDataPacket Schedule Close at time 2.61173
+Path1sendNumber > 0:0availableWindow > 0：0        m_txBuffer->AppSize ():39996932 SendDataPacket Schedule Close at time 2.61173
+Path2sendNumber > 0:0availableWindow > 0：0        m_txBuffer->AppSize ():39996932 SendDataPacket Schedule Close at time 2.61173
+Path0sendNumber > 0:7availableWindow > 0：10842        m_txBuffer->AppSize ():39999876 SendDataPacket Schedule Close at time 2.61173
+hhhhhhhhhhhhns3::UdpSocketImpl
+UdpSend的udpSocket：0x55cd14a03eb0  flags：0
+UdpSocketImpl的udpSocket：0x55cd3f20b220  flags：0
+hhhhhhhhhhhhns3::UdpSocketImpl
+UdpSend的udpSocket：0x55cd14a03eb0  flags：0
+UdpSocketImpl的udpSocket：0x55cd3f20ae60  flags：0
+hhhhhhhhhhhhns3::UdpSocketImpl
+UdpSend的udpSocket：0x55cd14a03eb0  flags：0
+UdpSocketImpl的udpSocket：0x55cd3f20aaa0  flags：0
+hhhhhhhhhhhhns3::UdpSocketImpl
+UdpSend的udpSocket：0x55cd14a03eb0  flags：0
+UdpSocketImpl的udpSocket：0x55cd3ea167a0  flags：0
+hhhhhhhhhhhhns3::UdpSocketImpl
+UdpSend的udpSocket：0x55cd14a03eb0  flags：0
+UdpSocketImpl的udpSocket：0x55cd16451a40  flags：0
+hhhhhhhhhhhhns3::UdpSocketImpl
+UdpSend的udpSocket：0x55cd14a03eb0  flags：0
+UdpSocketImpl的udpSocket：0x55cd3ea16650  flags：0
+hhhhhhhhhhhhns3::UdpSocketImpl
+UdpSend的udpSocket：0x55cd14a03eb0  flags：0
+UdpSocketImpl的udpSocket：0x55cd3ea16500  flags：0
+Path1sendNumber > 0:0availableWindow > 0：0        m_txBuffer->AppSize ():39989691 SendDataPacket Schedule Close at time 2.61173
+Path2sendNumber > 0:0availableWindow > 0：0        m_txBuffer->AppSize ():39989691 SendDataPacket Schedule Close at time 2.61173
+hhhhhhhhhhhhns3::UdpSocketImpl
+UdpSend的udpSocket：0x55cd149967e0  flags：0
+UdpSocketImpl的udpSocket：0x55cd4058a1f0  flags：0
+0x55cd149fd430   In slow start，，tcbd->m_cWnd:34318
+0x55cd149fd430   In slow start，，tcbd->m_cWnd:37245
+0x55cd149fd430   In slow start，，tcbd->m_cWnd:40172
+Path0sendNumber > 0:0availableWindow > 0：13762        m_txBuffer->AppSize ():39989691 SendDataPacket Schedule Close at time 2.61543
+Path1sendNumber > 0:0availableWindow > 0：0        m_txBuffer->AppSize ():39989691 SendDataPacket Schedule Close at time 2.61543
+Path2sendNumber > 0:0availableWindow > 0：0        m_txBuffer->AppSize ():39989691 SendDataPacket Schedule Close at time 2.61543
+Path0sendNumber > 0:0availableWindow > 0：13762        m_txBuffer->AppSize ():39999995 SendDataPacket Schedule Close at time 2.61543
+Path1sendNumber > 0:0availableWindow > 0：0        m_txBuffer->AppSize ():39999995 SendDataPacket Schedule Close at time 2.61543
+Path2sendNumber > 0:0availableWindow > 0：0        m_txBuffer->AppSize ():39999995 SendDataPacket Schedule Close at time 2.61543
+0x55cd149fd430   In slow start，，tcbd->m_cWnd:43099
+0x55cd149fd430   In slow start，，tcbd->m_cWnd:46031
+0x55cd149fd430   In slow start，，tcbd->m_cWnd:48958
+Path0sendNumber > 0:18availableWindow > 0：26954        m_txBuffer->AppSize ():39999995 SendDataPacket Schedule Close at time 2.61913
+hhhhhhhhhhhhns3::UdpSocketImpl
+UdpSend的udpSocket：0x55cd14a03eb0  flags：0
+UdpSocketImpl的udpSocket：0x55cd14e16200  flags：0
+hhhhhhhhhhhhns3::UdpSocketImpl
+UdpSend的udpSocket：0x55cd14a03eb0  flags：0
+UdpSocketImpl的udpSocket：0x55cd16451680  flags：0
+hhhhhhhhhhhhns3::UdpSocketImpl
+UdpSend的udpSocket：0x55cd14a03eb0  flags：0
+UdpSocketImpl的udpSocket：0x55cd3ea163b0  flags：0
+hhhhhhhhhhhhns3::UdpSocketImpl
+UdpSend的udpSocket：0x55cd14a03eb0  flags：0
+UdpSocketImpl的udpSocket：0x55cd3ea16260  flags：0
+hhhhhhhhhhhhns3::UdpSocketImpl
+UdpSend的udpSocket：0x55cd14a03eb0  flags：0
+UdpSocketImpl的udpSocket：0x55cd164512c0  flags：0
+hhhhhhhhhhhhns3::UdpSocketImpl
+UdpSend的udpSocket：0x55cd14a03eb0  flags：0
+UdpSocketImpl的udpSocket：0x55cd3ea16180  flags：0
+hhhhhhhhhhhhns3::UdpSocketImpl
+UdpSend的udpSocket：0x55cd14a03eb0  flags：0
+UdpSocketImpl的udpSocket：0x55cd3ea16030  flags：0
+hhhhhhhhhhhhns3::UdpSocketImpl
+UdpSend的udpSocket：0x55cd14a03eb0  flags：0
+UdpSocketImpl的udpSocket：0x55cd14b9e9d0  flags：0
+hhhhhhhhhhhhns3::UdpSocketImpl
+UdpSend的udpSocket：0x55cd14a03eb0  flags：0
+UdpSocketImpl的udpSocket：0x55cd14e15e40  flags：0
+hhhhhhhhhhhhns3::UdpSocketImpl
+UdpSend的udpSocket：0x55cd14a03eb0  flags：0
+UdpSocketImpl的udpSocket：0x55cd16450f00  flags：0
+hhhhhhhhhhhhns3::UdpSocketImpl
+UdpSend的udpSocket：0x55cd14a03eb0  flags：0
+UdpSocketImpl的udpSocket：0x55cd3ea15ee0  flags：0
+hhhhhhhhhhhhns3::UdpSocketImpl
+UdpSend的udpSocket：0x55cd14a03eb0  flags：0
+UdpSocketImpl的udpSocket：0x55cd3ea15d90  flags：0
+hhhhhhhhhhhhns3::UdpSocketImpl
+UdpSend的udpSocket：0x55cd14a03eb0  flags：0
+UdpSocketImpl的udpSocket：0x55cd16450b40  flags：0
+hhhhhhhhhhhhns3::UdpSocketImpl
+UdpSend的udpSocket：0x55cd14a03eb0  flags：0
+UdpSocketImpl的udpSocket：0x55cd3ea15c40  flags：0
+hhhhhhhhhhhhns3::UdpSocketImpl
+UdpSend的udpSocket：0x55cd14a03eb0  flags：0
+UdpSocketImpl的udpSocket：0x55cd3ea15af0  flags：0
+hhhhhhhhhhhhns3::UdpSocketImpl
+UdpSend的udpSocket：0x55cd14a03eb0  flags：0
+UdpSocketImpl的udpSocket：0x55cd14e15a80  flags：0
+hhhhhhhhhhhhns3::UdpSocketImpl
+UdpSend的udpSocket：0x55cd14a03eb0  flags：0
+UdpSocketImpl的udpSocket：0x55cd164508c0  flags：0
+hhhhhhhhhhhhns3::UdpSocketImpl
+UdpSend的udpSocket：0x55cd14a03eb0  flags：0
+UdpSocketImpl的udpSocket：0x55cd3ea159a0  flags：0
+Path1sendNumber > 0:0availableWindow > 0：0        m_txBuffer->AppSize ():39973806 SendDataPacket Schedule Close at time 2.61913
+Path2sendNumber > 0:0availableWindow > 0：0        m_txBuffer->AppSize ():39973806 SendDataPacket Schedule Close at time 2.61913
+hhhhhhhhhhhhns3::UdpSocketImpl
+UdpSend的udpSocket：0x55cd14a03eb0  flags：0
+UdpSocketImpl的udpSocket：0x55cd3f2196e0  flags：0
+Path0sendNumber > 0:0availableWindow > 0：538        m_txBuffer->AppSize ():39998830 SendDataPacket Schedule Close at time 2.61913
+Path1sendNumber > 0:0availableWindow > 0：0        m_txBuffer->AppSize ():39998830 SendDataPacket Schedule Close at time 2.61913
+Path2sendNumber > 0:0availableWindow > 0：0        m_txBuffer->AppSize ():39998830 SendDataPacket Schedule Close at time 2.61913
+0x55cd149fd430   In slow start，，tcbd->m_cWnd:51885
+0x55cd149fd430   In slow start，，tcbd->m_cWnd:54812
+0x55cd149fd430   In slow start，，tcbd->m_cWnd:57739
+Path0sendNumber > 0:0availableWindow > 0：13720        m_txBuffer->AppSize ():39998830 SendDataPacket Schedule Close at time 2.62282
+Path1sendNumber > 0:0availableWindow > 0：0        m_txBuffer->AppSize ():39998830 SendDataPacket Schedule Close at time 2.62282
+Path2sendNumber > 0:0availableWindow > 0：0        m_txBuffer->AppSize ():39998830 SendDataPacket Schedule Close at time 2.62282
+Path0sendNumber > 0:9availableWindow > 0：13720        m_txBuffer->AppSize ():39998830 SendDataPacket Schedule Close at time 2.62282
+hhhhhhhhhhhhns3::UdpSocketImpl
+UdpSend的udpSocket：0x55cd14a03eb0  flags：0
+UdpSocketImpl的udpSocket：0x55cd3ea158c0  flags：0
+hhhhhhhhhhhhns3::UdpSocketImpl
+UdpSend的udpSocket：0x55cd14a03eb0  flags：0
+UdpSocketImpl的udpSocket：0x55cd16450500  flags：0
+hhhhhhhhhhhhns3::UdpSocketImpl
+UdpSend的udpSocket：0x55cd14a03eb0  flags：0
+UdpSocketImpl的udpSocket：0x55cd3ea15770  flags：0
+hhhhhhhhhhhhns3::UdpSocketImpl
+UdpSend的udpSocket：0x55cd14a03eb0  flags：0
+UdpSocketImpl的udpSocket：0x55cd3ea15620  flags：0
+hhhhhhhhhhhhns3::UdpSocketImpl
+UdpSend的udpSocket：0x55cd14a03eb0  flags：0
+UdpSocketImpl的udpSocket：0x55cd1312da10  flags：0
+hhhhhhhhhhhhns3::UdpSocketImpl
+UdpSend的udpSocket：0x55cd14a03eb0  flags：0
+UdpSocketImpl的udpSocket：0x55cd14b9e610  flags：0
+hhhhhhhhhhhhns3::UdpSocketImpl
+UdpSend的udpSocket：0x55cd14a03eb0  flags：0
+UdpSocketImpl的udpSocket：0x55cd14e156c0  flags：0
+hhhhhhhhhhhhns3::UdpSocketImpl
+UdpSend的udpSocket：0x55cd14a03eb0  flags：0
+UdpSocketImpl的udpSocket：0x55cd16450140  flags：0
+hhhhhhhhhhhhns3::UdpSocketImpl
+UdpSend的udpSocket：0x55cd14a03eb0  flags：0
+UdpSocketImpl的udpSocket：0x55cd3ea154d0  flags：0
+Path1sendNumber > 0:0availableWindow > 0：0        m_txBuffer->AppSize ():39985736 SendDataPacket Schedule Close at time 2.62282
+Path2sendNumber > 0:0availableWindow > 0：0        m_txBuffer->AppSize ():39985736 SendDataPacket Schedule Close at time 2.62282
+0x55cd149fd430   In slow start，，tcbd->m_cWnd:60668
+0x55cd149fd430   In slow start，，tcbd->m_cWnd:63597
+0x55cd149fd430   In slow start，，tcbd->m_cWnd:66526
+Path0sendNumber > 0:0availableWindow > 0：13715        m_txBuffer->AppSize ():39985736 SendDataPacket Schedule Close at time 2.63181
+Path1sendNumber > 0:0availableWindow > 0：0        m_txBuffer->AppSize ():39985736 SendDataPacket Schedule Close at time 2.63181
+Path2sendNumber > 0:0availableWindow > 0：0        m_txBuffer->AppSize ():39985736 SendDataPacket Schedule Close at time 2.63181
+Path0sendNumber > 0:0availableWindow > 0：13715        m_txBuffer->AppSize ():39998984 SendDataPacket Schedule Close at time 2.63181
+Path1sendNumber > 0:0availableWindow > 0：0        m_txBuffer->AppSize ():39998984 SendDataPacket Schedule Close at time 2.63181
+Path2sendNumber > 0:0availableWindow > 0：0        m_txBuffer->AppSize ():39998984 SendDataPacket Schedule Close at time 2.63181
+hhhhhhhhhhhhns3::UdpSocketImpl
+UdpSend的udpSocket：0x55cd14a03eb0  flags：0
+UdpSocketImpl的udpSocket：0x55cd40591d20  flags：0
+0x55cd149fd430   In slow start，，tcbd->m_cWnd:69453
+0x55cd149fd430   In slow start，，tcbd->m_cWnd:72380
+Path0sendNumber > 0:15availableWindow > 0：22503        m_txBuffer->AppSize ():39998984 SendDataPacket Schedule Close at time 2.65431
+hhhhhhhhhhhhns3::UdpSocketImpl
+UdpSend的udpSocket：0x55cd14a03eb0  flags：0
+UdpSocketImpl的udpSocket：0x55cd3ea15380  flags：0
+hhhhhhhhhhhhns3::UdpSocketImpl
+UdpSend的udpSocket：0x55cd14a03eb0  flags：0
+UdpSocketImpl的udpSocket：0x55cd1644fd80  flags：0
+hhhhhhhhhhhhns3::UdpSocketImpl
+UdpSend的udpSocket：0x55cd14a03eb0  flags：0
+UdpSocketImpl的udpSocket：0x55cd3ea15230  flags：0
+hhhhhhhhhhhhns3::UdpSocketImpl
+UdpSend的udpSocket：0x55cd14a03eb0  flags：0
+UdpSocketImpl的udpSocket：0x55cd3ea150e0  flags：0
+hhhhhhhhhhhhns3::UdpSocketImpl
+UdpSend的udpSocket：0x55cd14a03eb0  flags：0
+UdpSocketImpl的udpSocket：0x55cd14e15300  flags：0
+hhhhhhhhhhhhns3::UdpSocketImpl
+UdpSend的udpSocket：0x55cd14a03eb0  flags：0
+UdpSocketImpl的udpSocket：0x55cd1644f9c0  flags：0
+hhhhhhhhhhhhns3::UdpSocketImpl
+UdpSend的udpSocket：0x55cd14a03eb0  flags：0
+UdpSocketImpl的udpSocket：0x55cd3ea15000  flags：0
+hhhhhhhhhhhhns3::UdpSocketImpl
+UdpSend的udpSocket：0x55cd14a03eb0  flags：0
+UdpSocketImpl的udpSocket：0x55cd3ea14eb0  flags：0
+hhhhhhhhhhhhns3::UdpSocketImpl
+UdpSend的udpSocket：0x55cd14a03eb0  flags：0
+UdpSocketImpl的udpSocket：0x55cd1644f600  flags：0
+hhhhhhhhhhhhns3::UdpSocketImpl
+UdpSend的udpSocket：0x55cd14a03eb0  flags：0
+UdpSocketImpl的udpSocket：0x55cd3ea14d60  flags：0
+hhhhhhhhhhhhns3::UdpSocketImpl
+UdpSend的udpSocket：0x55cd14a03eb0  flags：0
+UdpSocketImpl的udpSocket：0x55cd3ea14c10  flags：0
+hhhhhhhhhhhhns3::UdpSocketImpl
+UdpSend的udpSocket：0x55cd14a03eb0  flags：0
+UdpSocketImpl的udpSocket：0x55cd14b9e250  flags：0
+hhhhhhhhhhhhns3::UdpSocketImpl
+UdpSend的udpSocket：0x55cd14a03eb0  flags：0
+UdpSocketImpl的udpSocket：0x55cd14e15080  flags：0
+hhhhhhhhhhhhns3::UdpSocketImpl
+UdpSend的udpSocket：0x55cd14a03eb0  flags：0
+UdpSocketImpl的udpSocket：0x55cd1644f240  flags：0
+hhhhhhhhhhhhns3::UdpSocketImpl
+UdpSend的udpSocket：0x55cd14a03eb0  flags：0
+UdpSocketImpl的udpSocket：0x55cd3ea14ac0  flags：0
+Path1sendNumber > 0:0availableWindow > 0：0        m_txBuffer->AppSize ():39977161 SendDataPacket Schedule Close at time 2.65431
+Path2sendNumber > 0:0availableWindow > 0：0        m_txBuffer->AppSize ():39977161 SendDataPacket Schedule Close at time 2.65431
+Path0sendNumber > 0:0availableWindow > 0：463        m_txBuffer->AppSize ():39999241 SendDataPacket Schedule Close at time 2.65431
+Path1sendNumber > 0:0availableWindow > 0：0        m_txBuffer->AppSize ():39999241 SendDataPacket Schedule Close at time 2.65431
+Path2sendNumber > 0:0availableWindow > 0：0        m_txBuffer->AppSize ():39999241 SendDataPacket Schedule Close at time 2.65431
+hhhhhhhhhhhhns3::UdpSocketImpl
+UdpSend的udpSocket：0x55cd14a03eb0  flags：0
+UdpSocketImpl的udpSocket：0x55cd405c29f0  flags：0
+hhhhhhhhhhhhns3::UdpSocketImpl
+UdpSend的udpSocket：0x55cd14a03eb0  flags：0
+UdpSocketImpl的udpSocket：0x55cd1644efc0  flags：0
+hhhhhhhhhhhhns3::UdpSocketImpl
+UdpSend的udpSocket：0x55cd14a03eb0  flags：0
+UdpSocketImpl的udpSocket：0x55cd40570d80  flags：0
+Path0sendNumber > 0:0availableWindow > 0：0        m_txBuffer->AppSize ():39996332 SendDataPacket Schedule Close at time 2.67935
+Path1sendNumber > 0:0availableWindow > 0：0        m_txBuffer->AppSize ():39996332 SendDataPacket Schedule Close at time 2.67935
+Path2sendNumber > 0:0availableWindow > 0：0        m_txBuffer->AppSize ():39996332 SendDataPacket Schedule Close at time 2.67935
+Path0sendNumber > 0:0availableWindow > 0：0        m_txBuffer->AppSize ():39999276 SendDataPacket Schedule Close at time 2.67935
+Path1sendNumber > 0:0availableWindow > 0：0        m_txBuffer->AppSize ():39999276 SendDataPacket Schedule Close at time 2.67935
+Path2sendNumber > 0:0availableWindow > 0：0        m_txBuffer->AppSize ():39999276 SendDataPacket Schedule Close at time 2.67935
+hhhhhhhhhhhhns3::UdpSocketImpl
+UdpSend的udpSocket：0x55cd14a03eb0  flags：0
+UdpSocketImpl的udpSocket：0x55cd40565b70  flags：0
+hhhhhhhhhhhhns3::UdpSocketImpl
+UdpSend的udpSocket：0x55cd149918a0  flags：0
+UdpSocketImpl的udpSocket：0x55cd3f2b2480  flags：0
+hhhhhhhhhhhhns3::UdpSocketImpl
+UdpSend的udpSocket：0x55cd3f2b4c80  flags：0
+UdpSocketImpl的udpSocket：0x55cd405709b0  flags：0
+hhhhhhhhhhhhns3::UdpSocketImpl
+UdpSend的udpSocket：0x55cd149918a0  flags：0
+UdpSocketImpl的udpSocket：0x55cd4059eb90  flags：0
+hhhhhhhhhhhhns3::UdpSocketImpl
+UdpSend的udpSocket：0x55cd3f2b4c80  flags：0
+UdpSocketImpl的udpSocket：0x55cd40570ca0  flags：0
+hhhhhhhhhhhhns3::UdpSocketImpl
+UdpSend的udpSocket：0x55cd149967e0  flags：0
+UdpSocketImpl的udpSocket：0x55cd405c6920  flags：0
+hhhhhhhhhhhhns3::UdpSocketImpl
+UdpSend的udpSocket：0x55cd149967e0  flags：0
+UdpSocketImpl的udpSocket：0x55cd3f2196e0  flags：0
+hhhhhhhhhhhhns3::UdpSocketImpl
+UdpSend的udpSocket：0x55cd149918a0  flags：0
+UdpSocketImpl的udpSocket：0x55cd40596480  flags：0
+hhhhhhhhhhhhns3::UdpSocketImpl
+UdpSend的udpSocket：0x55cd3f2b4c80  flags：0
+UdpSocketImpl的udpSocket：0x55cd4056eac0  flags：0
+hhhhhhhhhhhhns3::UdpSocketImpl
+UdpSend的udpSocket：0x55cd149967e0  flags：0
+UdpSocketImpl的udpSocket：0x55cd3f2b3570  flags：0
+hhhhhhhhhhhhns3::UdpSocketImpl
+UdpSend的udpSocket：0x55cd149967e0  flags：0
+UdpSocketImpl的udpSocket：0x55cd4057dc50  flags：0
+hhhhhhhhhhhhns3::UdpSocketImpl
+UdpSend的udpSocket：0x55cd149967e0  flags：0
+UdpSocketImpl的udpSocket：0x55cd3f21b3a0  flags：0
+hhhhhhhhhhhhns3::UdpSocketImpl
+UdpSend的udpSocket：0x55cd149918a0  flags：0
+UdpSocketImpl的udpSocket：0x55cd405bf110  flags：0
+hhhhhhhhhhhhns3::UdpSocketImpl
+UdpSend的udpSocket：0x55cd149967e0  flags：0
+UdpSocketImpl的udpSocket：0x55cd405c5900  flags：0
+hhhhhhhhhhhhns3::UdpSocketImpl
+UdpSend的udpSocket：0x55cd3f2b4c80  flags：0
+UdpSocketImpl的udpSocket：0x55cd405875c0  flags：0
+hhhhhhhhhhhhns3::UdpSocketImpl
+UdpSend的udpSocket：0x55cd149967e0  flags：0
+UdpSocketImpl的udpSocket：0x55cd405c7850  flags：0
+hhhhhhhhhhhhns3::UdpSocketImpl
+UdpSend的udpSocket：0x55cd149967e0  flags：0
+UdpSocketImpl的udpSocket：0x55cd3f2b2710  flags：0
+hhhhhhhhhhhhns3::UdpSocketImpl
+UdpSend的udpSocket：0x55cd149967e0  flags：0
