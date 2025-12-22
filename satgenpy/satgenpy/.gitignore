@@ -1,9 +1,0 @@
-*.iml
-.idea/
-dist/
-*.egg-info
-*.pyc
-temp/
-.coverage
-htmlcov/
-temp_*/
