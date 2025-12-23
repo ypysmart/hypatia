@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>LEO 卫星星座流量与负载监控系统</title>
+    <style>
+        body { margin: 0; background-color: #000; overflow: hidden; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        #info-panel {
+            position: absolute; top: 20px; left: 20px; color: #00ff41;
+            background: rgba(0, 20, 0, 0.7); padding: 15px; border: 1px solid #00ff41;
+            pointer-events: none; border-radius: 5px; text-shadow: 0 0 5px #00ff41;
+        }
+        #legend {
+            position: absolute; bottom: 20px; right: 20px; color: white;
+            background: rgba(0,0,0,0.8); padding: 10px; border-radius: 5px;
+        }
+        .legend-item { display: flex; align-items: center; margin-bottom: 5px; }
+        .color-box { width: 20px; height: 10px; margin-right: 10px; border: 1px solid white; }
+    </style>
+</head>
+<body>
+
+<div id="info-panel">
+    <h2>卫星网络监控终端</h2>
+    <div id="stats">
+        卫星总数: <span id="sat-count">1000</span><br>
+        当前负载因子: <span id="load-factor">1.0</span><br>
+        平均拥塞率: <span id="congestion">0.00%</span><br>
+        活跃路由路径: <span id="active-paths">0</span>
+    </div>
+</div>
+
+<div id="legend">
+    <div class="legend-item"><div class="color-box" style="background: #00ff00;"></div> 低负载 (0-30%)</div>
+    <div class="legend-item"><div class="color-box" style="background: #ffff00;"></div> 中负载 (30-70%)</div>
+    <div class="legend-item"><div class="color-box" style="background: #ff0000;"></div> 高拥塞 (>90%)</div>
+    <div class="legend-item"><div class="color-box" style="background: #ffd700; height: 3px;"></div> 路由路径 (Path)</div>
+</div>
+
+<script type="importmap">
+    {
+        "imports": {
+            "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+            "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+        }
+    }
+</script>
+
+<script type="module">
+    import * as THREE from 'three';
+    import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+
+    // --- 模拟参数 (同步 Python 后端逻辑) ---
+    const NUM_PLANES = 25;
+    const SAT_PER_PLANE = 40;
+    const TOTAL_SATS = NUM_PLANES * SAT_PER_PLANE;
+    const EARTH_RADIUS = 5; // 缩放比例
+    const ORBIT_ALTITUDE = 0.5; 
+    const ORBIT_RADIUS = EARTH_RADIUS + ORBIT_ALTITUDE;
+    const INCLINATION = Math.PI * 53 / 180;
+
+    const LINK_CAPACITY = 10000;
+    const LINK_DELAY = 5;
+
+    const BASE_NUM_FLOWS = 1000;
+    const TIME_STEPS = 10;
+    const SIM_ROUNDS = 5;
+    const LOAD_FACTOR_START = 1.0;
+    const LOAD_FACTOR_END = 5.0;
+    const HOTSPOT_RATIO = 0.7;
+
+    const FLOW_TYPES = {
+        'video': {prob: 0.3, bw_shape: 1.2, bw_scale: 20, dur_shape: 1.5, dur_scale: 5},
+        'file': {prob: 0.4, bw_shape: 1.5, bw_scale: 5, dur_shape: 1.8, dur_scale: 3},
+        'voip': {prob: 0.3, bw_shape: 2.0, bw_scale: 1, dur_shape: 2.0, dur_scale: 1}
+    };
+    const type_keys = Object.keys(FLOW_TYPES);
+    const type_probs = type_keys.map(t => FLOW_TYPES[t].prob);
+
+    // --- 初始化场景 ---
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+    const renderer = new THREE.WebGLRenderer({ antialias: true });
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    document.body.appendChild(renderer.domElement);
+
+    const controls = new OrbitControls(camera, renderer.domElement);
+    camera.position.z = 15;
+
+    // --- 渲染物体 ---
+    // 1. 地球
+    const earthGeo = new THREE.SphereGeometry(EARTH_RADIUS, 64, 64);
+    const earthMat = new THREE.MeshPhongMaterial({ 
+        color: 0x1133ff, 
+        wireframe: true, 
+        transparent: true, 
+        opacity: 0.3 
+    });
+    const earth = new THREE.Mesh(earthGeo, earthMat);
+    scene.add(earth);
+
+    const light = new THREE.PointLight(0xffffff, 1.5);
+    light.position.set(10, 10, 10);
+    scene.add(light);
+    scene.add(new THREE.AmbientLight(0x404040));
+
+    // 2. 卫星
+    const sats = [];
+    const satGeometry = new THREE.SphereGeometry(0.04, 8, 8);
+    const satMaterial = new THREE.MeshBasicMaterial({ color: 0x00ffff });
+
+    for (let i = 0; i < TOTAL_SATS; i++) {
+        const sat = new THREE.Mesh(satGeometry, satMaterial);
+        scene.add(sat);
+        sats.push(sat);
+    }
+
+    // 3. 链路 (ISLs)
+    // 为了性能，我们使用线段集合
+    const linkMaterial = new THREE.LineBasicMaterial({ vertexColors: true, transparent: true, opacity: 0.4 });
+    const linkGeometry = new THREE.BufferGeometry();
+    let linkMesh = new THREE.LineSegments(linkGeometry, linkMaterial);
+    scene.add(linkMesh);
+
+    // 4. 路由路径 (高亮线)
+    const pathMaterial = new THREE.LineBasicMaterial({ color: 0xffd700, linewidth: 3 });
+    let pathLines = new THREE.Group();
+    scene.add(pathLines);
+
+    // --- 图结构 ---
+    let adj = Array.from({length: TOTAL_SATS}, () => []);
+    let edges = {};
+
+    function addEdge(u, v, cap=LINK_CAPACITY, del=LINK_DELAY, lo=0) {
+        let a = Math.min(u, v);
+        let b = Math.max(u, v);
+        let key = `${a}-${b}`;
+        if (!edges[key]) {
+            edges[key] = {capacity: cap, delay: del, load: lo};
+            adj[u].push(v);
+            adj[v].push(u);
+        }
+    }
+
+    // 创建星座
+    for (let plane = 0; plane < NUM_PLANES; plane++) {
+        for (let sat = 0; sat < SAT_PER_PLANE; sat++) {
+            const sat_id = plane * SAT_PER_PLANE + sat;
+            const front = (sat + 1) % SAT_PER_PLANE;
+            const front_id = plane * SAT_PER_PLANE + front;
+            addEdge(sat_id, front_id);
+
+            const back = (sat - 1 + SAT_PER_PLANE) % SAT_PER_PLANE;
+            const back_id = plane * SAT_PER_PLANE + back;
+            addEdge(sat_id, back_id);
+
+            const left_plane = (plane - 1 + NUM_PLANES) % NUM_PLANES;
+            const left_id = left_plane * SAT_PER_PLANE + (sat + 1) % SAT_PER_PLANE;
+            addEdge(sat_id, left_id);
+
+            const right_plane = (plane + 1) % NUM_PLANES;
+            const right_id = right_plane * SAT_PER_PLANE + (sat - 1 + SAT_PER_PLANE) % SAT_PER_PLANE;
+            addEdge(sat_id, right_id);
+        }
+    }
+
+    // --- 分布函数 ---
+    function poissonRandom(lambda) {
+        let L = Math.exp(-lambda);
+        let k = 0;
+        let p = 1;
+        do {
+            k++;
+            p *= Math.random();
+        } while (p > L);
+        return k - 1;
+    }
+
+    function paretoRandom(shape, scale) {
+        let u = Math.random();
+        return scale / Math.pow(1 - u, 1 / shape);
+    }
+
+    function choice(arr, probs) {
+        let cum = 0;
+        let r = Math.random();
+        for (let i = 0; i < arr.length; i++) {
+            cum += probs[i];
+            if (r < cum) return arr[i];
+        }
+        return arr[arr.length - 1];
+    }
+
+    // --- 生成flows ---
+    function generateFlows(poisson_lambda, load_factor, hotspot_sources, hotspot_dests) {
+        let flows = [];
+        let num_new_flows = poissonRandom(poisson_lambda);
+        for (let i = 0; i < num_new_flows; i++) {
+            let flow_type = choice(type_keys, type_probs);
+            let {bw_shape, bw_scale, dur_shape, dur_scale} = FLOW_TYPES[flow_type];
+            let bandwidth = paretoRandom(bw_shape, bw_scale) * load_factor;
+            let duration = Math.floor(paretoRandom(dur_shape, dur_scale));
+            let src, dst;
+            if (Math.random() < HOTSPOT_RATIO) {
+                src = hotspot_sources[Math.floor(Math.random() * hotspot_sources.length)];
+                dst = hotspot_dests[Math.floor(Math.random() * hotspot_dests.length)];
+            } else {
+                src = Math.floor(Math.random() * TOTAL_SATS);
+                dst = Math.floor(Math.random() * TOTAL_SATS);
+                while (dst === src) dst = Math.floor(Math.random() * TOTAL_SATS);
+            }
+            flows.push({type: flow_type, bw: bandwidth, dur: duration, start: 0, src, dst, path: null});
+        }
+        return flows;
+    }
+
+    // --- 最短路径 (BFS, since uniform delay) ---
+    function shortestPath(src, dst) {
+        if (src === dst) return [src];
+        let queue = [src];
+        let prev = Array(TOTAL_SATS).fill(-1);
+        prev[src] = -2;
+        let found = false;
+        while (queue.length > 0 && !found) {
+            let u = queue.shift();
+            for (let v of adj[u]) {
+                if (prev[v] === -1) {
+                    prev[v] = u;
+                    queue.push(v);
+                    if (v === dst) {
+                        found = true;
+                        break;
+                    }
+                }
+            }
+        }
+        if (!found) return [];
+        let path = [];
+        let current = dst;
+        while (current !== -2) {
+            path.push(current);
+            current = prev[current];
+        }
+        path.reverse();
+        return path;
+    }
+
+    // --- 热点 ---
+    let hotspot_sources = [];
+    while (hotspot_sources.length < 10) {
+        let r = Math.floor(Math.random() * TOTAL_SATS);
+        if (!hotspot_sources.includes(r)) hotspot_sources.push(r);
+    }
+    let hotspot_dests = [];
+    while (hotspot_dests.length < 10) {
+        let r = Math.floor(Math.random() * TOTAL_SATS);
+        if (!hotspot_dests.includes(r)) hotspot_dests.push(r);
+    }
+
+    // --- 模拟状态 ---
+    let flows = [];
+    let sim_t = 0;
+    let load_factor = LOAD_FACTOR_START;
+    let round_num = 1;
+
+    function advance_sim() {
+        if (sim_t === 0 && flows.length === 0) {
+            // 新轮次
+            if (round_num > SIM_ROUNDS) round_num = 1;
+            load_factor = LOAD_FACTOR_START + (LOAD_FACTOR_END - LOAD_FACTOR_START) * (round_num - 1) / (SIM_ROUNDS - 1);
+            let poisson_lambda = BASE_NUM_FLOWS * load_factor;
+            flows = generateFlows(poisson_lambda, load_factor, hotspot_sources, hotspot_dests);
+        }
+
+        // 清空负载
+        for (let key in edges) {
+            edges[key].load = 0;
+        }
+
+        let active_count = 0;
+        for (let flow of flows) {
+            if (flow.start <= sim_t && sim_t < flow.start + flow.dur) {
+                if (flow.path === null || sim_t % 5 === 0) {
+                    flow.path = shortestPath(flow.src, flow.dst);
+                }
+                let path = flow.path;
+                if (path.length > 1) {
+                    for (let i = 0; i < path.length - 1; i++) {
+                        let u = path[i], v = path[i + 1];
+                        let a = Math.min(u, v), b = Math.max(u, v);
+                        let key = `${a}-${b}`;
+                        if (edges[key]) {
+                            edges[key].load += flow.bw;
+                        }
+                    }
+                    active_count++;
+                }
+            }
+        }
+
+        // 计算拥塞
+        let congested_edges = 0;
+        let total_edges = Object.keys(edges).length;
+        let total_load = 0;
+        let max_load = 0;
+        for (let key in edges) {
+            let load = edges[key].load;
+            let cap = edges[key].capacity;
+            total_load += load;
+            max_load = Math.max(max_load, load);
+            if (load > cap) congested_edges++;
+        }
+        let congestion_ratio = (congested_edges / total_edges) * 100 || 0;
+        let avg_load = total_load / total_edges || 0;
+
+        // 更新 UI
+        document.getElementById('load-factor').innerText = load_factor.toFixed(1);
+        document.getElementById('congestion').innerText = congestion_ratio.toFixed(2) + "%";
+        document.getElementById('active-paths').innerText = active_count;
+
+        // 推进模拟时间
+        sim_t++;
+        if (sim_t >= TIME_STEPS) {
+            sim_t = 0;
+            flows = [];
+            round_num++;
+        }
+    }
+
+    // --- 核心算法：位置计算 ---
+    function getSatPosition(index, time) {
+        const plane = Math.floor(index / SAT_PER_PLANE);
+        const satInPlane = index % SAT_PER_PLANE;
+        
+        const raan = (2 * Math.PI * plane) / NUM_PLANES;
+        const initialAnomaly = (2 * Math.PI * satInPlane) / SAT_PER_PLANE;
+        const angularSpeed = 0.001; // 模拟速度
+        const trueAnomaly = initialAnomaly + time * angularSpeed;
+
+        // 轨道坐标转 Cartesian
+        let x = ORBIT_RADIUS * Math.cos(trueAnomaly);
+        let y = ORBIT_RADIUS * Math.sin(trueAnomaly);
+
+        // 旋转倾角
+        const x_rot = x * Math.cos(raan) - y * Math.sin(raan) * Math.cos(INCLINATION);
+        const y_rot = x * Math.sin(raan) + y * Math.cos(raan) * Math.cos(INCLINATION);
+        const z_rot = y * Math.sin(INCLINATION);
+
+        return new THREE.Vector3(x_rot, y_rot, z_rot);
+    }
+
+    // --- 模拟动态更新 ---
+    let time = 0;
+    function update() {
+        time += 1;
+        const positions = [];
+        const linkPoints = [];
+        const linkColors = [];
+
+        // 更新卫星位置
+        for (let i = 0; i < TOTAL_SATS; i++) {
+            const pos = getSatPosition(i, time);
+            sats[i].position.copy(pos);
+            positions[i] = pos;
+        }
+
+        // 推进模拟 (每10帧一次)
+        if (time % 10 === 0) {
+            advance_sim();
+        }
+
+        // 生成链路 (使用真实负载)
+        for (let key in edges) {
+            let [a, b] = key.split('-').map(Number);
+            linkPoints.push(positions[a].x, positions[a].y, positions[a].z);
+            linkPoints.push(positions[b].x, positions[b].y, positions[b].z);
+            
+            const load = edges[key].load / edges[key].capacity;
+            let color = new THREE.Color(0x00ff00); // 绿
+            if (load > 0.9) color.setHex(0xff0000); // 红
+            else if (load > 0.3) color.setHex(0xffff00); // 黄
+            
+            linkColors.push(color.r, color.g, color.b);
+            linkColors.push(color.r, color.g, color.b);
+        }
+
+        linkGeometry.setAttribute('position', new THREE.Float32BufferAttribute(linkPoints, 3));
+        linkGeometry.setAttribute('color', new THREE.Float32BufferAttribute(linkColors, 3));
+        linkGeometry.attributes.position.needsUpdate = true;
+
+        // 模拟动态路由展示 (每隔一段时间展示几条路径)
+        if (time % 100 === 0) {
+            drawPaths(positions);
+        }
+    }
+
+    function drawPaths(positions) {
+        pathLines.clear();
+        let active_flows = flows.filter(f => f.start <= sim_t && sim_t < f.start + f.dur && f.path && f.path.length > 1);
+        // 随机选择5条
+        let selected = active_flows.sort(() => 0.5 - Math.random()).slice(0, 5);
+        for (let flow of selected) {
+            const points = flow.path.map(id => positions[id]);
+            const lineGeo = new THREE.BufferGeometry().setFromPoints(points);
+            const line = new THREE.Line(lineGeo, pathMaterial);
+            pathLines.add(line);
+        }
+    }
+
+    function animate() {
+        requestAnimationFrame(animate);
+        update();
+        controls.update();
+        renderer.render(scene, camera);
+    }
+
+    window.addEventListener('resize', () => {
+        camera.aspect = window.innerWidth / window.innerHeight;
+        camera.updateProjectionMatrix();
+        renderer.setSize(window.innerWidth, window.innerHeight);
+    });
+
+    animate();
+</script>
+</body>
+</html>

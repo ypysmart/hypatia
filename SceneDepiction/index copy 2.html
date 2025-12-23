@@ -1,0 +1,613 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LEO 卫星网络流量拥塞可视化</title>
+    <style>
+        body { margin: 0; overflow: hidden; background-color: #000; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        #canvas-container { width: 100vw; height: 100vh; display: block; }
+        #ui-layer {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            color: #00ffcc;
+            background: rgba(0, 0, 0, 0.8);
+            padding: 20px;
+            border: 1px solid #00ffcc;
+            border-radius: 8px;
+            pointer-events: none; /* 让鼠标事件穿透到 3D 场景 */
+            box-shadow: 0 0 15px rgba(0, 255, 204, 0.2);
+            min-width: 250px;
+        }
+        h1 { margin: 0 0 10px 0; font-size: 18px; text-transform: uppercase; letter-spacing: 1px; border-bottom: 1px solid #444; padding-bottom: 5px; color: #fff; }
+        .stat-row { display: flex; justify-content: space-between; margin-bottom: 5px; font-size: 14px; }
+        .stat-value { font-weight: bold; }
+        .legend { margin-top: 15px; border-top: 1px solid #444; padding-top: 10px; }
+        .legend-item { display: flex; align-items: center; font-size: 12px; margin-bottom: 4px; color: #ccc; }
+        .color-box { width: 12px; height: 12px; margin-right: 8px; border-radius: 2px; }
+        
+        #loading {
+            position: absolute;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            color: white;
+            font-size: 24px;
+            background: rgba(0,0,0,0.9);
+            padding: 40px;
+            border-radius: 10px;
+            z-index: 999;
+            transition: opacity 0.5s;
+        }
+    </style>
+    <!-- 引入 Three.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <!-- 引入 OrbitControls -->
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+</head>
+<body>
+
+    <div id="loading">正在初始化星座网络...</div>
+
+    <div id="ui-layer">
+        <h1>网络状态监控</h1>
+        <div class="stat-row"><span>活跃 Flows:</span> <span id="stat-active" class="stat-value">0</span></div>
+        <div class="stat-row"><span>总链路数:</span> <span id="stat-links" class="stat-value">0</span></div>
+        <div class="stat-row"><span>拥塞比例:</span> <span id="stat-congestion" class="stat-value">0%</span></div>
+        <div class="stat-row"><span>平均负载:</span> <span id="stat-avg-load" class="stat-value">0 Mbps</span></div>
+        <div class="stat-row"><span>最大负载:</span> <span id="stat-max-load" class="stat-value">0 Mbps</span></div>
+        <div class="stat-row"><span>模拟时间:</span> <span id="stat-time" class="stat-value">0 min</span></div>
+
+        <div class="legend">
+            <div class="legend-item"><div class="color-box" style="background: #003300;"></div>空闲 (< 30%)</div>
+            <div class="legend-item"><div class="color-box" style="background: #00ff00;"></div>正常 (30-70%)</div>
+            <div class="legend-item"><div class="color-box" style="background: #ffff00;"></div>繁忙 (70-100%)</div>
+            <div class="legend-item"><div class="color-box" style="background: #ff0000; box-shadow: 0 0 5px red;"></div>拥塞 (> 100%)</div>
+            <div class="legend-item"><div class="color-box" style="background: #00ffff; box-shadow: 0 0 5px cyan;"></div>路由路径</div>
+        </div>
+    </div>
+
+    <div id="canvas-container"></div>
+
+<script>
+/**
+ * 核心配置参数 (对应 Python 代码)
+ */
+const CONFIG = {
+    NUM_PLANES: 25,
+    SAT_PER_PLANE: 40,
+    LINK_CAPACITY: 10000, // Mbps
+    // 视觉缩放比例 (地球半径为 10 单位)
+    EARTH_RADIUS_VISUAL: 10,
+    ORBIT_ALTITUDE_KM: 550,
+    EARTH_RADIUS_KM: 6371,
+    INCLINATION_DEG: 53,
+    ORBITAL_PERIOD_MIN: 95,
+    TIME_SCALE: 0.1, // 动画速度乘数
+    
+    // 流量生成参数
+    BASE_NUM_FLOWS: 50, // 每帧尝试生成的流量数 (为了浏览器性能，比Python版有所调整)
+    MAX_ACTIVE_FLOWS: 800, // 限制前端最大活跃数以保证FPS
+    HOTSPOT_RATIO: 0.7,
+    LINK_DELAY: 5
+};
+
+// 计算轨道视觉半径
+const ORBIT_RADIUS_VISUAL = CONFIG.EARTH_RADIUS_VISUAL * ((CONFIG.EARTH_RADIUS_KM + CONFIG.ORBIT_ALTITUDE_KM) / CONFIG.EARTH_RADIUS_KM);
+
+/**
+ * 辅助数学函数
+ */
+// Pareto 分布生成器 (简化版)
+function randomPareto(shape, scale) {
+    const u = Math.random();
+    return scale / Math.pow(u, 1 / shape);
+}
+
+/**
+ * 逻辑类: 星座网络模拟 (对应 Python 后端逻辑)
+ */
+class SatelliteNetwork {
+    constructor() {
+        this.totalSats = CONFIG.NUM_PLANES * CONFIG.SAT_PER_PLANE;
+        this.adjList = new Array(this.totalSats).fill(0).map(() => []); // 邻接表
+        this.edges = []; // 存储边对象 {u, v, load, capacity, id}
+        this.edgeMap = new Map(); // "u-v" -> edgeIndex
+        this.positions = new Float32Array(this.totalSats * 3); // x, y, z
+        
+        this.flows = [];
+        this.currentTimeMin = 0;
+        
+        this.initTopology();
+    }
+
+    // 初始化 Walker 星座拓扑
+    initTopology() {
+        console.log("Generating topology...");
+        const { NUM_PLANES, SAT_PER_PLANE, LINK_CAPACITY } = CONFIG;
+        
+        const addEdge = (u, v) => {
+            if (u > v) [u, v] = [v, u]; // 保证唯一性 u < v
+            const key = `${u}-${v}`;
+            if (this.edgeMap.has(key)) return;
+
+            const edgeIdx = this.edges.length;
+            this.edges.push({
+                u, v, 
+                load: 0, 
+                capacity: LINK_CAPACITY,
+                congested: false
+            });
+            this.edgeMap.set(key, edgeIdx);
+            
+            // 添加到邻接表用于路由
+            this.adjList[u].push(v);
+            this.adjList[v].push(u);
+        };
+
+        for (let plane = 0; plane < NUM_PLANES; plane++) {
+            for (let sat = 0; sat < SAT_PER_PLANE; sat++) {
+                const satId = plane * SAT_PER_PLANE + sat;
+                
+                // 1. 同轨道前后链路 (Intra-plane)
+                const front = (sat + 1) % SAT_PER_PLANE;
+                const frontId = plane * SAT_PER_PLANE + front;
+                addEdge(satId, frontId);
+
+                // 2. 异轨道左右链路 (Inter-plane)
+                // 简化网格：连接左侧平面的对应卫星（简单相位偏移）
+                const leftPlane = (plane - 1 + NUM_PLANES) % NUM_PLANES;
+                const leftSat = sat; // 简化相位因子
+                const leftId = leftPlane * SAT_PER_PLANE + leftSat;
+                addEdge(satId, leftId);
+            }
+        }
+        console.log(`Topology ready: ${this.totalSats} nodes, ${this.edges.length} edges.`);
+    }
+
+    // 更新卫星位置
+    updatePositions(dt) {
+        this.currentTimeMin += dt;
+        const inclination = CONFIG.INCLINATION_DEG * (Math.PI / 180);
+        const { NUM_PLANES, SAT_PER_PLANE, ORBITAL_PERIOD_MIN } = CONFIG;
+        const R = ORBIT_RADIUS_VISUAL;
+
+        for (let plane = 0; plane < NUM_PLANES; plane++) {
+            const raan = 2 * Math.PI * plane / NUM_PLANES; // 升交点赤经
+            
+            for (let sat = 0; sat < SAT_PER_PLANE; sat++) {
+                const satId = plane * SAT_PER_PLANE + sat;
+                
+                // 平近点角 + 时间推移
+                const initialAnomaly = 2 * Math.PI * sat / SAT_PER_PLANE;
+                const angularSpeed = 2 * Math.PI / ORBITAL_PERIOD_MIN;
+                let trueAnomaly = initialAnomaly + angularSpeed * this.currentTimeMin;
+                
+                // 核心轨道公式 (X, Z 平面为轨道平面，Y 为轴? No, standard physics frame usually: Z is North)
+                // 这里为了适配 Three.js (Y is Up), 我们做一个变换
+                // 原始物理坐标:
+                // x = r (cosΩ cosθ - sinΩ sinθ cos i)
+                // y = r (sinΩ cosθ + cosΩ sinθ cos i)
+                // z = r (sinθ sin i)
+                // Ω = raan, θ = trueAnomaly, i = inclination
+                
+                const cosO = Math.cos(raan);
+                const sinO = Math.sin(raan);
+                const cosT = Math.cos(trueAnomaly);
+                const sinT = Math.sin(trueAnomaly);
+                const cosI = Math.cos(inclination);
+                const sinI = Math.sin(inclination);
+
+                const x = R * (cosO * cosT - sinO * sinT * cosI);
+                const z = R * (sinO * cosT + cosO * sinT * cosI); // 原 y
+                const y = R * (sinT * sinI); // 原 z, 映射到 Three.js 的 Y 轴为高度
+
+                this.positions[satId * 3] = x;
+                this.positions[satId * 3 + 1] = y;
+                this.positions[satId * 3 + 2] = z;
+            }
+        }
+    }
+
+    // 简单的 BFS 最短路径 (无权图，Hop count)
+    // 返回路径节点数组 [src, ..., dst]
+    findPath(src, dst) {
+        if (src === dst) return [];
+        
+        const queue = [src];
+        const visited = new Int8Array(this.totalSats).fill(0);
+        const parent = new Int32Array(this.totalSats).fill(-1);
+        visited[src] = 1;
+
+        let found = false;
+        
+        while (queue.length > 0) {
+            const u = queue.shift();
+            if (u === dst) {
+                found = true;
+                break;
+            }
+
+            const neighbors = this.adjList[u];
+            for (let i = 0; i < neighbors.length; i++) {
+                const v = neighbors[i];
+                if (!visited[v]) {
+                    visited[v] = 1;
+                    parent[v] = u;
+                    queue.push(v);
+                }
+            }
+        }
+
+        if (!found) return null;
+
+        // 重建路径
+        const path = [];
+        let curr = dst;
+        while (curr !== -1) {
+            path.push(curr);
+            curr = parent[curr];
+        }
+        return path.reverse();
+    }
+
+    // 流量模拟核心
+    simulateTraffic() {
+        // 1. 清空当前负载
+        for (let i = 0; i < this.edges.length; i++) {
+            this.edges[i].load = 0;
+        }
+
+        // 2. 清理过期 Flows
+        // 简单处理：为了演示，每帧让每个 Flow 寿命 -1，或者随机生成新 Flow 替换旧的
+        // 这里采用维护一个活动列表的方式
+        const activeFlows = [];
+        
+        // 生成新流量
+        if (this.flows.length < CONFIG.MAX_ACTIVE_FLOWS) {
+            const numNew = 5; // 每帧生成几个
+            for(let i=0; i<numNew; i++) {
+                // 随机源宿
+                const src = Math.floor(Math.random() * this.totalSats);
+                let dst = Math.floor(Math.random() * this.totalSats);
+                while(src === dst) dst = Math.floor(Math.random() * this.totalSats);
+
+                // 类型 (简化)
+                const bw = randomPareto(1.5, 5) * 50; // 带宽 Mbps
+                const dur = Math.floor(randomPareto(1.5, 100)) + 50; // 持续帧数
+
+                activeFlows.push({
+                    src, dst, bw, life: dur, path: null
+                });
+            }
+        }
+
+        // 处理现有流量
+        for (let flow of this.flows) {
+            flow.life--;
+            if (flow.life > 0) {
+                // 如果没有路径，计算路径
+                if (!flow.path) {
+                    flow.path = this.findPath(flow.src, flow.dst);
+                }
+
+                // 如果有路径，增加负载
+                if (flow.path && flow.path.length > 1) {
+                    for (let i = 0; i < flow.path.length - 1; i++) {
+                        let u = flow.path[i];
+                        let v = flow.path[i+1];
+                        if (u > v) [u, v] = [v, u];
+                        const key = `${u}-${v}`;
+                        const edgeIdx = this.edgeMap.get(key);
+                        if (edgeIdx !== undefined) {
+                            this.edges[edgeIdx].load += flow.bw;
+                        }
+                    }
+                    activeFlows.push(flow);
+                }
+            }
+        }
+        
+        this.flows = activeFlows;
+
+        // 3. 统计拥塞
+        let congestedCount = 0;
+        let totalLoad = 0;
+        let maxLoad = 0;
+
+        for (let e of this.edges) {
+            totalLoad += e.load;
+            if (e.load > maxLoad) maxLoad = e.load;
+            if (e.load > e.capacity) {
+                congestedCount++;
+                e.congested = true;
+            } else {
+                e.congested = false;
+            }
+        }
+
+        return {
+            activeFlows: this.flows.length,
+            congestedCount,
+            totalLinks: this.edges.length,
+            avgLoad: this.edges.length > 0 ? totalLoad / this.edges.length : 0,
+            maxLoad
+        };
+    }
+}
+
+/**
+ * 渲染类: Three.js 场景管理
+ */
+class Visualizer {
+    constructor(network) {
+        this.network = network;
+        this.container = document.getElementById('canvas-container');
+        
+        // 场景设置
+        this.scene = new THREE.Scene();
+        // 增加一点环境光
+        this.scene.add(new THREE.AmbientLight(0x333333));
+        // 定向光模拟太阳
+        const sunLight = new THREE.DirectionalLight(0xffffff, 1);
+        sunLight.position.set(50, 20, 50);
+        this.scene.add(sunLight);
+
+        // 相机
+        this.camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
+        this.camera.position.set(40, 20, 40);
+
+        // 渲染器
+        this.renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true }); // alpha for transparent bg effect
+        this.renderer.setSize(window.innerWidth, window.innerHeight);
+        this.renderer.setPixelRatio(window.devicePixelRatio);
+        this.container.appendChild(this.renderer.domElement);
+
+        // 控制器
+        this.controls = new THREE.OrbitControls(this.camera, this.renderer.domElement);
+        this.controls.enableDamping = true;
+        this.controls.autoRotate = true;
+        this.controls.autoRotateSpeed = 0.5;
+
+        // 初始化对象
+        this.createEarth();
+        this.createSatellites();
+        this.createLinks();
+        this.createPathLines(); // 专门用于高亮路径的池
+
+        // 监听调整大小
+        window.addEventListener('resize', () => this.onResize());
+    }
+
+    createEarth() {
+        // 创建一个简单的地球网格
+        const geometry = new THREE.SphereGeometry(CONFIG.EARTH_RADIUS_VISUAL, 32, 32);
+        const material = new THREE.MeshPhongMaterial({
+            color: 0x112244,
+            emissive: 0x001133,
+            wireframe: false,
+            transparent: true,
+            opacity: 0.9
+        });
+        const earth = new THREE.Mesh(geometry, material);
+        this.scene.add(earth);
+
+        // 地球线框层，增加科技感
+        const wireGeo = new THREE.WireframeGeometry(geometry);
+        const wireMat = new THREE.LineBasicMaterial({ color: 0x335588, transparent: true, opacity: 0.3 });
+        const wireframe = new THREE.LineSegments(wireGeo, wireMat);
+        this.scene.add(wireframe);
+    }
+
+    createSatellites() {
+        const geometry = new THREE.SphereGeometry(0.15, 8, 8);
+        const material = new THREE.MeshBasicMaterial({ color: 0xffffff });
+        this.satMesh = new THREE.InstancedMesh(geometry, material, this.network.totalSats);
+        this.scene.add(this.satMesh);
+        
+        // 初始位置设置 (Dummy, will be updated in loop)
+        const dummy = new THREE.Object3D();
+        for (let i = 0; i < this.network.totalSats; i++) {
+            dummy.position.set(0, 0, 0);
+            dummy.updateMatrix();
+            this.satMesh.setMatrixAt(i, dummy.matrix);
+        }
+    }
+
+    createLinks() {
+        // 使用 LineSegments 渲染所有链路
+        // 我们需要自定义 geometry 来支持动态颜色更新
+        const geometry = new THREE.BufferGeometry();
+        const positions = new Float32Array(this.network.edges.length * 2 * 3); // 2 points per edge, 3 coords
+        const colors = new Float32Array(this.network.edges.length * 2 * 3); // RGB
+        
+        geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+        geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+        
+        const material = new THREE.LineBasicMaterial({ 
+            vertexColors: true, 
+            transparent: true, 
+            opacity: 0.6,
+            blending: THREE.AdditiveBlending 
+        });
+
+        this.linkMesh = new THREE.LineSegments(geometry, material);
+        this.linkMesh.frustumCulled = false; // 避免计算边界盒开销，总是渲染
+        this.scene.add(this.linkMesh);
+    }
+
+    createPathLines() {
+        // 创建一个用于展示活跃路由路径的 Group
+        this.pathGroup = new THREE.Group();
+        this.scene.add(this.pathGroup);
+        // 我们不每帧都重创建 geometry，而是使用一个 Line 缓冲池
+        this.activePathLines = [];
+    }
+
+    updateSatellites() {
+        const dummy = new THREE.Object3D();
+        const pos = this.network.positions;
+        
+        for (let i = 0; i < this.network.totalSats; i++) {
+            dummy.position.set(pos[i*3], pos[i*3+1], pos[i*3+2]);
+            dummy.updateMatrix();
+            this.satMesh.setMatrixAt(i, dummy.matrix);
+        }
+        this.satMesh.instanceMatrix.needsUpdate = true;
+    }
+
+    updateLinks() {
+        const pos = this.network.positions;
+        const positions = this.linkMesh.geometry.attributes.position.array;
+        const colors = this.linkMesh.geometry.attributes.color.array;
+        const edges = this.network.edges;
+
+        for (let i = 0; i < edges.length; i++) {
+            const e = edges[i];
+            const u = e.u;
+            const v = e.v;
+
+            // 更新端点位置
+            const idx = i * 6; // 2 points * 3 coords
+            positions[idx]   = pos[u*3];
+            positions[idx+1] = pos[u*3+1];
+            positions[idx+2] = pos[u*3+2];
+            
+            positions[idx+3] = pos[v*3];
+            positions[idx+4] = pos[v*3+1];
+            positions[idx+5] = pos[v*3+2];
+
+            // 更新颜色 (基于负载)
+            const ratio = e.load / e.capacity;
+            let r, g, b;
+
+            if (ratio > 1.0) { // 拥塞: 红
+                r = 1.0; g = 0.0; b = 0.0;
+            } else if (ratio > 0.7) { // 繁忙: 黄
+                r = 1.0; g = 1.0; b = 0.0;
+            } else if (ratio > 0.3) { // 正常: 绿
+                r = 0.0; g = 1.0; b = 0.0;
+            } else { // 空闲: 暗绿/灰
+                r = 0.0; g = 0.2; b = 0.0;
+            }
+
+            colors[idx]   = r; colors[idx+1] = g; colors[idx+2] = b;
+            colors[idx+3] = r; colors[idx+4] = g; colors[idx+5] = b;
+        }
+
+        this.linkMesh.geometry.attributes.position.needsUpdate = true;
+        this.linkMesh.geometry.attributes.color.needsUpdate = true;
+    }
+
+    updatePaths() {
+        // 清除旧路径 (简单粗暴法: 移除所有子元素)
+        // 生产环境应该使用对象池
+        while(this.pathGroup.children.length > 0){ 
+            this.pathGroup.remove(this.pathGroup.children[0]); 
+        }
+
+        // 随机挑选几个活跃的流来绘制路径，避免绘制太多卡顿
+        const displayLimit = 20; 
+        const flows = this.network.flows;
+        const pos = this.network.positions;
+
+        let count = 0;
+        // 倒序遍历，显示最新的流
+        for (let i = flows.length - 1; i >= 0 && count < displayLimit; i--) {
+            const flow = flows[i];
+            if (!flow.path || flow.path.length < 2) continue;
+
+            const points = [];
+            for (let nodeId of flow.path) {
+                points.push(new THREE.Vector3(
+                    pos[nodeId*3], pos[nodeId*3+1], pos[nodeId*3+2]
+                ));
+            }
+
+            const geometry = new THREE.BufferGeometry().setFromPoints(points);
+            const material = new THREE.LineBasicMaterial({ 
+                color: 0x00ffff, 
+                linewidth: 2, // WebGL limit 1 on Windows mostly, but good intent
+                transparent: true,
+                opacity: 0.8
+            });
+            const line = new THREE.Line(geometry, material);
+            this.pathGroup.add(line);
+            count++;
+        }
+    }
+
+    onResize() {
+        this.camera.aspect = window.innerWidth / window.innerHeight;
+        this.camera.updateProjectionMatrix();
+        this.renderer.setSize(window.innerWidth, window.innerHeight);
+    }
+}
+
+/**
+ * 主程序
+ */
+async function main() {
+    // 1. 初始化模拟逻辑
+    const network = new SatelliteNetwork();
+    
+    // 2. 初始化渲染器
+    const visualizer = new Visualizer(network);
+
+    // 隐藏加载
+    document.getElementById('loading').style.display = 'none';
+
+    // 3. 动画循环
+    let lastTime = performance.now();
+    
+    // UI Elements
+    const uiActive = document.getElementById('stat-active');
+    const uiLinks = document.getElementById('stat-links');
+    const uiCongest = document.getElementById('stat-congestion');
+    const uiAvg = document.getElementById('stat-avg-load');
+    const uiMax = document.getElementById('stat-max-load');
+    const uiTime = document.getElementById('stat-time');
+
+    uiLinks.innerText = network.edges.length;
+
+    function animate() {
+        requestAnimationFrame(animate);
+        
+        // 物理更新
+        // 为了平滑动画，使用较小的时间步长
+        const dt = CONFIG.TIME_SCALE; 
+        network.updatePositions(dt);
+
+        // 流量更新 (稍微降低频率以提升帧率，例如每 5 帧计算一次，或者每帧计算部分)
+        // 这里为了效果流畅，每帧都算，但控制流的总量
+        const stats = network.simulateTraffic();
+
+        // 视觉同步
+        visualizer.updateSatellites();
+        visualizer.updateLinks();
+        visualizer.updatePaths();
+        visualizer.controls.update();
+
+        // 渲染
+        visualizer.renderer.render(visualizer.scene, visualizer.camera);
+
+        // UI 更新
+        uiActive.innerText = stats.activeFlows;
+        uiCongest.innerText = (stats.congestedCount / stats.totalLinks * 100).toFixed(2) + '%';
+        if(stats.congestedCount > 0) uiCongest.style.color = '#ff3333';
+        else uiCongest.style.color = '#00ffcc';
+
+        uiAvg.innerText = stats.avgLoad.toFixed(0) + ' Mbps';
+        uiMax.innerText = stats.maxLoad.toFixed(0) + ' Mbps';
+        uiTime.innerText = network.currentTimeMin.toFixed(1) + ' min';
+    }
+
+    animate();
+}
+
+// 启动
+main().catch(err => console.error(err));
+
+</script>
+</body>
+</html>

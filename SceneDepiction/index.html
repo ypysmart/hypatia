@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Satellite Network Congestion Visualization</title>
+    <style>
+        body { margin: 0; }
+    </style>
+</head>
+<body>
+    <script type="importmap">
+        {
+            "imports": {
+                "three": "https://cdn.jsdelivr.net/npm/three@0.159/build/three.module.js",
+                "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.159/examples/jsm/"
+            }
+        }
+    </script>
+    <script type="module">
+        import * as THREE from 'three';
+        import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+
+        // Parameters (reduced scale for performance)
+        const NUM_PLANES = 5;
+        const SAT_PER_PLANE = 10;
+        const TOTAL_SATS = NUM_PLANES * SAT_PER_PLANE;
+        const EARTH_RADIUS = 6371;
+        const ORBIT_ALTITUDE = 550;
+        const ORBIT_RADIUS = EARTH_RADIUS + ORBIT_ALTITUDE;
+        const INCLINATION = 53 * Math.PI / 180;
+        const ORBITAL_PERIOD_MIN = 95;
+        const DELTA_T_MIN = 0.5; // Time increment per frame (minutes)
+        const LINK_CAPACITY = 10000;
+        const BASE_NUM_FLOWS = 20; // Number of flows to generate periodically
+
+        // Scene setup
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 100000);
+        camera.position.z = ORBIT_RADIUS * 1.5;
+        const renderer = new THREE.WebGLRenderer();
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        document.body.appendChild(renderer.domElement);
+
+        // Add Earth
+        const earthGeometry = new THREE.SphereGeometry(EARTH_RADIUS, 32, 32);
+        const earthMaterial = new THREE.MeshBasicMaterial({ color: 0x0000ff, transparent: true, opacity: 0.7 });
+        const earth = new THREE.Mesh(earthGeometry, earthMaterial);
+        scene.add(earth);
+
+        // Satellite positions function
+        function getSatPosition(plane, sat, current_time_min) {
+            const raan = 2 * Math.PI * plane / NUM_PLANES;
+            const initial_anomaly = 2 * Math.PI * sat / SAT_PER_PLANE;
+            const angular_speed = 2 * Math.PI / ORBITAL_PERIOD_MIN;
+            const true_anomaly = (initial_anomaly + angular_speed * current_time_min) % (2 * Math.PI);
+            const cos_t = Math.cos(true_anomaly);
+            const sin_t = Math.sin(true_anomaly);
+            const cos_r = Math.cos(raan);
+            const sin_r = Math.sin(raan);
+            const cos_i = Math.cos(INCLINATION);
+            const sin_i = Math.sin(INCLINATION);
+            const x = ORBIT_RADIUS * (cos_t * cos_r - sin_t * sin_r * cos_i);
+            const y = ORBIT_RADIUS * (cos_t * sin_r + sin_t * cos_r * cos_i);
+            const z = ORBIT_RADIUS * (sin_t * sin_i);
+            return new THREE.Vector3(x, y, z);
+        }
+
+        // Create satellites
+        const sats = [];
+        for (let i = 0; i < TOTAL_SATS; i++) {
+            const geometry = new THREE.SphereGeometry(50, 8, 8);
+            const material = new THREE.MeshBasicMaterial({ color: 0xffffff });
+            const mesh = new THREE.Mesh(geometry, material);
+            scene.add(mesh);
+            sats.push(mesh);
+        }
+
+        // Graph for routing (adjacency list)
+        const graph = {};
+        for (let i = 0; i < TOTAL_SATS; i++) {
+            graph[i] = {};
+        }
+        for (let plane = 0; plane < NUM_PLANES; plane++) {
+            for (let sat = 0; sat < SAT_PER_PLANE; sat++) {
+                const sat_id = plane * SAT_PER_PLANE + sat;
+                // Intra-plane front
+                const front = (sat + 1) % SAT_PER_PLANE;
+                const front_id = plane * SAT_PER_PLANE + front;
+                graph[sat_id][front_id] = 5; // delay as weight
+                // Intra-plane back (redundant but ok)
+                const back = (sat - 1 + SAT_PER_PLANE) % SAT_PER_PLANE;
+                const back_id = plane * SAT_PER_PLANE + back;
+                graph[sat_id][back_id] = 5;
+                // Inter-plane left
+                const left_plane = (plane - 1 + NUM_PLANES) % NUM_PLANES;
+                const left_id = left_plane * SAT_PER_PLANE + (sat + 1) % SAT_PER_PLANE;
+                graph[sat_id][left_id] = 5;
+                // Inter-plane right
+                const right_plane = (plane + 1) % NUM_PLANES;
+                const right_id = right_plane * SAT_PER_PLANE + (sat - 1 + SAT_PER_PLANE) % SAT_PER_PLANE;
+                graph[sat_id][right_id] = 5;
+            }
+        }
+
+        // Create link lines
+        const links = [];
+        for (let u = 0; u < TOTAL_SATS; u++) {
+            for (let v in graph[u]) {
+                v = parseInt(v);
+                if (u < v) { // Avoid duplicates
+                    const material = new THREE.LineBasicMaterial({ color: 0x00ff00, linewidth: 1 });
+                    const geometry = new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(), new THREE.Vector3()]);
+                    const line = new THREE.Line(geometry, material);
+                    scene.add(line);
+                    links.push({ u, v, line, load: 0 });
+                }
+            }
+        }
+
+        // Flows array
+        const flows = [];
+        const pathLines = [];
+
+        // Generate flows (simplified, no Pareto)
+        function generateFlows() {
+            for (let i = 0; i < BASE_NUM_FLOWS; i++) {
+                const src = Math.floor(Math.random() * TOTAL_SATS);
+                let dst = Math.floor(Math.random() * TOTAL_SATS);
+                while (dst === src) dst = Math.floor(Math.random() * TOTAL_SATS);
+                const bw = Math.random() * 500 + 50; // Random bandwidth
+                const dur = Math.random() * 20 + 5; // Random duration
+                flows.push({ src, dst, bw, dur, start: currentTimeMin, path: null });
+            }
+        }
+
+        // Dijkstra shortest path
+        function shortestPath(src, dst) {
+            const dist = new Array(TOTAL_SATS).fill(Infinity);
+            dist[src] = 0;
+            const prev = new Array(TOTAL_SATS).fill(null);
+            const pq = [{ node: src, dist: 0 }];
+            const visited = new Set();
+
+            while (pq.length) {
+                pq.sort((a, b) => a.dist - b.dist);
+                const curr = pq.shift();
+                if (visited.has(curr.node)) continue;
+                visited.add(curr.node);
+                if (curr.node === dst) break;
+                for (let neighbor in graph[curr.node]) {
+                    neighbor = parseInt(neighbor);
+                    const alt = dist[curr.node] + graph[curr.node][neighbor];
+                    if (alt < dist[neighbor]) {
+                        dist[neighbor] = alt;
+                        prev[neighbor] = curr.node;
+                        pq.push({ node: neighbor, dist: alt });
+                    }
+                }
+            }
+
+            const path = [];
+            let u = dst;
+            while (u !== null) {
+                path.unshift(u);
+                u = prev[u];
+            }
+            if (path[0] !== src) return [];
+            return path;
+        }
+
+        // Update satellite positions
+        let currentTimeMin = 0;
+        function updatePositions() {
+            for (let plane = 0; plane < NUM_PLANES; plane++) {
+                for (let sat = 0; sat < SAT_PER_PLANE; sat++) {
+                    const sat_id = plane * SAT_PER_PLANE + sat;
+                    const pos = getSatPosition(plane, sat, currentTimeMin);
+                    sats[sat_id].position.copy(pos);
+                }
+            }
+            // Update link positions and colors
+            for (let link of links) {
+                const posU = sats[link.u].position;
+                const posV = sats[link.v].position;
+                link.line.geometry.setFromPoints([posU, posV]);
+                const ratio = link.load / LINK_CAPACITY;
+                let color = 0x00ff00; // green
+                if (ratio > 0.5) color = 0xffa500; // orange
+                if (ratio > 1) color = 0xff0000; // red
+                link.line.material.color.setHex(color);
+                link.line.material.linewidth = Math.min(1 + ratio * 5, 10); // Cap width
+                link.line.material.needsUpdate = true;
+            }
+        }
+
+        // Update loads from active flows
+        function updateLoads() {
+            // Reset loads
+            for (let link of links) {
+                link.load = 0;
+            }
+            // Add loads from active flows
+            for (let flow of flows) {
+                if (currentTimeMin >= flow.start && currentTimeMin < flow.start + flow.dur) {
+                    if (!flow.path) {
+                        flow.path = shortestPath(flow.src, flow.dst);
+                    }
+                    const path = flow.path;
+                    for (let i = 0; i < path.length - 1; i++) {
+                        let u = path[i];
+                        let v = path[i + 1];
+                        if (u > v) [u, v] = [v, u]; // Normalize
+                        const link = links.find(l => l.u === u && l.v === v);
+                        if (link) {
+                            link.load += flow.bw;
+                        }
+                    }
+                }
+            }
+        }
+
+        // Update flow path visualizations (yellow lines for large flows)
+        function updatePaths() {
+            // Remove old path lines
+            pathLines.forEach(line => scene.remove(line));
+            pathLines.length = 0;
+            // Add new for active large flows
+            for (let flow of flows) {
+                if (currentTimeMin >= flow.start && currentTimeMin < flow.start + flow.dur && flow.path && flow.bw > 200) {
+                    const points = flow.path.map(id => sats[id].position.clone());
+                    const geometry = new THREE.BufferGeometry().setFromPoints(points);
+                    const material = new THREE.LineBasicMaterial({ color: 0xffff00, linewidth: Math.min(flow.bw / 100, 10) });
+                    const line = new THREE.Line(geometry, material);
+                    scene.add(line);
+                    pathLines.push(line);
+                }
+            }
+        }
+
+        // Animation loop
+        function animate() {
+            requestAnimationFrame(animate);
+            earth.rotation.y += 0.0005; // Slow Earth rotation
+            currentTimeMin += DELTA_T_MIN / 30; // Slow down simulation speed
+            updatePositions();
+            updateLoads();
+            updatePaths();
+            controls.update();
+            renderer.render(scene, camera);
+        }
+
+        // Orbit controls for interaction
+        const controls = new OrbitControls(camera, renderer.domElement);
+        controls.enableZoom = true;
+
+        // Initial setup
+        generateFlows();
+        updatePositions();
+        animate();
+
+        // Generate new flows every 5 seconds
+        setInterval(generateFlows, 5000);
+
+        // Handle window resize
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+    </script>
+</body>
+</html>

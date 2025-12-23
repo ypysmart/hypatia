@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>LEO 卫星星座流量与负载监控系统</title>
+    <style>
+        body { margin: 0; background-color: #000; overflow: hidden; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        #info-panel {
+            position: absolute; top: 20px; left: 20px; color: #00ff41;
+            background: rgba(0, 20, 0, 0.7); padding: 15px; border: 1px solid #00ff41;
+            pointer-events: none; border-radius: 5px; text-shadow: 0 0 5px #00ff41;
+        }
+        #legend {
+            position: absolute; bottom: 20px; right: 20px; color: white;
+            background: rgba(0,0,0,0.8); padding: 10px; border-radius: 5px;
+        }
+        .legend-item { display: flex; align-items: center; margin-bottom: 5px; }
+        .color-box { width: 20px; height: 10px; margin-right: 10px; border: 1px solid white; }
+    </style>
+</head>
+<body>
+
+<div id="info-panel">
+    <h2>卫星网络监控终端</h2>
+    <div id="stats">
+        卫星总数: <span id="sat-count">1000</span><br>
+        当前负载因子: <span id="load-factor">1.0</span><br>
+        平均拥塞率: <span id="congestion">0.00%</span><br>
+        活跃路由路径: <span id="active-paths">0</span>
+    </div>
+</div>
+
+<div id="legend">
+    <div class="legend-item"><div class="color-box" style="background: #00ff00;"></div> 低负载 (0-30%)</div>
+    <div class="legend-item"><div class="color-box" style="background: #ffff00;"></div> 中负载 (30-70%)</div>
+    <div class="legend-item"><div class="color-box" style="background: #ff0000;"></div> 高拥塞 (>90%)</div>
+    <div class="legend-item"><div class="color-box" style="background: #ffd700; height: 3px;"></div> 路由路径 (Path)</div>
+</div>
+
+<script type="importmap">
+    {
+        "imports": {
+            "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+            "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+        }
+    }
+</script>
+
+<script type="module">
+    import * as THREE from 'three';
+    import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+
+    // --- 模拟参数 (同步 Python 后端逻辑) ---
+    const NUM_PLANES = 25;
+    const SAT_PER_PLANE = 40;
+    const TOTAL_SATS = NUM_PLANES * SAT_PER_PLANE;
+    const EARTH_RADIUS = 5; // 缩放比例
+    const ORBIT_ALTITUDE = 0.5; 
+    const ORBIT_RADIUS = EARTH_RADIUS + ORBIT_ALTITUDE;
+    const INCLINATION = Math.PI * 53 / 180;
+
+    // --- 初始化场景 ---
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+    const renderer = new THREE.WebGLRenderer({ antialias: true });
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    document.body.appendChild(renderer.domElement);
+
+    const controls = new OrbitControls(camera, renderer.domElement);
+    camera.position.z = 15;
+
+    // --- 渲染物体 ---
+    // 1. 地球
+    const earthGeo = new THREE.SphereGeometry(EARTH_RADIUS, 64, 64);
+    const earthMat = new THREE.MeshPhongMaterial({ 
+        color: 0x1133ff, 
+        wireframe: true, 
+        transparent: true, 
+        opacity: 0.3 
+    });
+    const earth = new THREE.Mesh(earthGeo, earthMat);
+    scene.add(earth);
+
+    const light = new THREE.PointLight(0xffffff, 1.5);
+    light.position.set(10, 10, 10);
+    scene.add(light);
+    scene.add(new THREE.AmbientLight(0x404040));
+
+    // 2. 卫星
+    const sats = [];
+    const satGeometry = new THREE.SphereGeometry(0.04, 8, 8);
+    const satMaterial = new THREE.MeshBasicMaterial({ color: 0x00ffff });
+
+    for (let i = 0; i < TOTAL_SATS; i++) {
+        const sat = new THREE.Mesh(satGeometry, satMaterial);
+        scene.add(sat);
+        sats.push(sat);
+    }
+
+    // 3. 链路 (ISLs)
+    // 为了性能，我们使用线段集合
+    const linkMaterial = new THREE.LineBasicMaterial({ vertexColors: true, transparent: true, opacity: 0.4 });
+    const linkGeometry = new THREE.BufferGeometry();
+    let linkMesh = new THREE.LineSegments(linkGeometry, linkMaterial);
+    scene.add(linkMesh);
+
+    // 4. 路由路径 (高亮线)
+    const pathMaterial = new THREE.LineBasicMaterial({ color: 0xffd700, linewidth: 3 });
+    let pathLines = new THREE.Group();
+    scene.add(pathLines);
+
+    // --- 核心算法：位置计算 ---
+    function getSatPosition(index, time) {
+        const plane = Math.floor(index / SAT_PER_PLANE);
+        const satInPlane = index % SAT_PER_PLANE;
+        
+        const raan = (2 * Math.PI * plane) / NUM_PLANES;
+        const initialAnomaly = (2 * Math.PI * satInPlane) / SAT_PER_PLANE;
+        const angularSpeed = 0.001; // 模拟速度
+        const trueAnomaly = initialAnomaly + time * angularSpeed;
+
+        // 轨道坐标转 Cartesian
+        let x = ORBIT_RADIUS * Math.cos(trueAnomaly);
+        let y = ORBIT_RADIUS * Math.sin(trueAnomaly);
+
+        // 旋转倾角
+        const x_rot = x * Math.cos(raan) - y * Math.sin(raan) * Math.cos(INCLINATION);
+        const y_rot = x * Math.sin(raan) + y * Math.cos(raan) * Math.cos(INCLINATION);
+        const z_rot = y * Math.sin(INCLINATION);
+
+        return new THREE.Vector3(x_rot, y_rot, z_rot);
+    }
+
+    // --- 模拟动态更新 ---
+    let time = 0;
+    function update() {
+        time += 1;
+        const positions = [];
+        const linkPoints = [];
+        const linkColors = [];
+
+        // 更新卫星位置
+        for (let i = 0; i < TOTAL_SATS; i++) {
+            const pos = getSatPosition(i, time);
+            sats[i].position.copy(pos);
+            positions[i] = pos;
+        }
+
+        // 模拟链路生成（前后、左右邻居）
+        for (let plane = 0; plane < NUM_PLANES; plane++) {
+            for (let sat = 0; sat < SAT_PER_PLANE; sat++) {
+                const idx = plane * SAT_PER_PLANE + sat;
+                const neighbors = [
+                    plane * SAT_PER_PLANE + (sat + 1) % SAT_PER_PLANE, // 同轨道后方
+                    ((plane + 1) % NUM_PLANES) * SAT_PER_PLANE + sat   // 相邻轨道
+                ];
+
+                neighbors.forEach(nIdx => {
+                    linkPoints.push(positions[idx].x, positions[idx].y, positions[idx].z);
+                    linkPoints.push(positions[nIdx].x, positions[nIdx].y, positions[nIdx].z);
+                    
+                    // 模拟负载变色 (随机模拟，实际应由后端推送)
+                    const load = Math.random();
+                    let color = new THREE.Color(0x00ff00); // 绿
+                    if (load > 0.9) color.setHex(0xff0000); // 红
+                    else if (load > 0.6) color.setHex(0xffff00); // 黄
+                    
+                    linkColors.push(color.r, color.g, color.b);
+                    linkColors.push(color.r, color.g, color.b);
+                });
+            }
+        }
+
+        linkGeometry.setAttribute('position', new THREE.Float32BufferAttribute(linkPoints, 3));
+        linkGeometry.setAttribute('color', new THREE.Float32BufferAttribute(linkColors, 3));
+        linkGeometry.attributes.position.needsUpdate = true;
+
+        // 模拟动态路由展示 (每隔一段时间随机展示几条路径)
+        if (time % 100 === 0) {
+            drawRandomPaths(positions);
+        }
+
+        // 更新 UI
+        if(time % 10 === 0) {
+            document.getElementById('congestion').innerText = (Math.random() * 5).toFixed(2) + "%";
+        }
+    }
+
+    function drawRandomPaths(positions) {
+        pathLines.clear();
+        for(let p=0; p<5; p++) {
+            const points = [];
+            let current = Math.floor(Math.random() * TOTAL_SATS);
+            for(let step=0; step<6; step++) { // 模拟 6 跳路由
+                points.push(positions[current]);
+                current = (current + 1) % TOTAL_SATS;
+            }
+            const lineGeo = new THREE.BufferGeometry().setFromPoints(points);
+            const line = new THREE.Line(lineGeo, pathMaterial);
+            pathLines.add(line);
+        }
+        document.getElementById('active-paths').innerText = Math.floor(Math.random() * 500 + 800);
+    }
+
+    function animate() {
+        requestAnimationFrame(animate);
+        update();
+        controls.update();
+        renderer.render(scene, university); // 修正：这里应为 scene, camera
+    }
+
+    // 修复 render 调用中的变量名错误
+    function startAnimate() {
+        requestAnimationFrame(startAnimate);
+        update();
+        controls.update();
+        renderer.render(scene, camera);
+    }
+
+    window.addEventListener('resize', () => {
+        camera.aspect = window.innerWidth / window.innerHeight;
+        camera.updateProjectionMatrix();
+        renderer.setSize(window.innerWidth, window.innerHeight);
+    });
+
+    startAnimate();
+</script>
+</body>
+</html>

@@ -3,6 +3,8 @@ import numpy as np
 from scipy import stats  # Pareto分布
 from collections import defaultdict
 import plotly.graph_objects as go  # 用于交互式3D可视化和动画
+import json  # 用于保存参数和数据
+import os  # 用于创建目录
 
 # 参数设置（可调整以控制拥塞）
 NUM_PLANES = 25
@@ -109,20 +111,34 @@ def generate_flows(poisson_lambda, load_factor, hotspot_sources, hotspot_dests):
     return flows
 
 # 模拟轮次（动态计算负载）
-def simulate_round(G, flows, round_num):
+def simulate_round(G, flows, round_num, simulation_data):
     frames_3d = []
     frames_2d = []
     current_time_min = 0.0
     
+    round_data = []  # 收集本轮次的所有时间步数据
+    
     for t in range(TIME_STEPS):
+        timestep_data = {
+            'round': round_num,
+            'timestep': t,
+            'current_time_min': current_time_min,
+            'positions': {},
+            'flows': [],
+            'edge_loads': {},
+            'congestion': {}
+        }
+        
         # 更新卫星位置（动态运动）
         positions = update_sat_positions(NUM_PLANES, SAT_PER_PLANE, INCLINATION, current_time_min)
+        timestep_data['positions'] = {int(k): v for k, v in positions.items()}  # 转换为JSON可序列化
         
         # 清空负载
         for u, v in G.edges():
             G[u][v]['load'] = 0
         
         active_count = 0
+        active_flows = []
         for flow in flows:
             if flow['start'] <= t < flow['start'] + flow['dur']:
                 if flow['path'] is None or t % 5 == 0:  # 每5步重新计算路径（模拟动态路由）
@@ -138,146 +154,49 @@ def simulate_round(G, flows, round_num):
                     elif G.has_edge(v, u):
                         G[v][u]['load'] += flow['bw']
                 active_count += 1
+                # 保存flow细节（转换为可序列化）
+                active_flows.append({
+                    'type': flow['type'],
+                    'bw': flow['bw'],
+                    'dur': flow['dur'],
+                    'start': flow['start'],
+                    'src': flow['src'],
+                    'dst': flow['dst'],
+                    'path': flow['path'] if flow['path'] else []
+                })
+        
+        timestep_data['flows'] = active_flows
+        
+        # 保存所有边的负载和容量
+        edge_loads = {}
+        for u, v, data in G.edges(data=True):
+            edge_key = f"{min(u,v)}-{max(u,v)}"  # 无向边唯一键
+            edge_loads[edge_key] = {
+                'load': data['load'],
+                'capacity': data['capacity'],
+                'delay': data['delay']
+            }
+        timestep_data['edge_loads'] = edge_loads
         
         congestion_ratio, avg_load, max_load = calculate_congestion(G)
+        timestep_data['congestion'] = {
+            'congestion_ratio': congestion_ratio,
+            'avg_load': avg_load,
+            'max_load': max_load,
+            'active_flows_count': active_count
+        }
+        
         print(f"轮次 {round_num} 时间步 {t}: 活跃flows={active_count}, 拥塞比例={congestion_ratio*100:.2f}%, 平均负载={avg_load:.2f} Mbps, 最大负载={max_load:.2f} Mbps")
         
-        # 创建3D动画帧
-        frame_3d = go.Frame(data=create_3d_traces(G, positions), name=str(t))
-        frames_3d.append(frame_3d)
+        round_data.append(timestep_data)
         
-        # 创建2D动画帧
-        frame_2d = go.Frame(data=create_2d_traces(G, positions, NUM_PLANES, SAT_PER_PLANE), name=str(t))
-        frames_2d.append(frame_2d)
-        
-        current_time_min += DELTA_T_MIN  # 更新时间
+        # 更新时间
+        current_time_min += DELTA_T_MIN
     
-    # 生成3D动画
-    fig_3d = go.Figure(data=frames_3d[0].data, frames=frames_3d)
-    fig_3d.update_layout(
-        title=f'动态3D卫星星座可视化 (轮次 {round_num}) - 红色为拥塞链路',
-        scene=dict(xaxis_title='X (km)', yaxis_title='Y (km)', zaxis_title='Z (km)', aspectmode='cube'),
-        updatemenus=[dict(type='buttons', buttons=[dict(label='Play', method='animate', args=[None, dict(frame=dict(duration=500, redraw=True), fromcurrent=True)])])],
-        sliders=[dict(steps=[dict(method='relayout', label=str(k), args=[{'frame': k}]) for k in range(TIME_STEPS)])]
-    )
-    html_file_3d = f'3d_dynamic_congestion_round_{round_num}.html'
-    fig_3d.write_html(html_file_3d)
-    print(f"动态3D可视化动画已保存为 '{html_file_3d}'（浏览器中打开可播放动画）")
-    
-    # 生成2D动画（类似）
-    fig_2d = go.Figure(data=frames_2d[0].data, frames=frames_2d)
-    fig_2d.update_layout(
-        title=f'动态2D矩形卫星星座可视化 (轮次 {round_num}) - 红色为拥塞链路',
-        xaxis_title='卫星在平面内位置',
-        yaxis_title='轨道平面ID',
-        updatemenus=[dict(type='buttons', buttons=[dict(label='Play', method='animate', args=[None, dict(frame=dict(duration=500, redraw=True), fromcurrent=True)])])],
-        sliders=[dict(steps=[dict(method='relayout', label=str(k), args=[{'frame': k}]) for k in range(TIME_STEPS)])]
-    )
-    html_file_2d = f'2d_dynamic_congestion_round_{round_num}.html'
-    fig_2d.write_html(html_file_2d)
-    print(f"动态2D可视化动画已保存为 '{html_file_2d}'（浏览器中打开可播放动画）")
-
-# 创建3D traces
-def create_3d_traces(G, positions):
-    traces = []
-    
-    # 地球
-    phi = np.linspace(0, 2 * np.pi, 100)
-    theta = np.linspace(0, np.pi, 100)
-    phi, theta = np.meshgrid(phi, theta)
-    x_earth = EARTH_RADIUS * np.sin(theta) * np.cos(phi)
-    y_earth = EARTH_RADIUS * np.sin(theta) * np.sin(phi)
-    z_earth = EARTH_RADIUS * np.cos(theta)
-    traces.append(go.Surface(x=x_earth, y=y_earth, z=z_earth, colorscale='Blues', showscale=False, opacity=1.0, hoverinfo='none'))
-    
-    # 卫星
-    xs, ys, zs, hover_texts = [], [], [], []
-    for sat_id, (x, y, z) in positions.items():
-        xs.append(x)
-        ys.append(y)
-        zs.append(z)
-        total_load = sum(G[sat_id][nbr]['load'] for nbr in G.neighbors(sat_id))
-        hover_texts.append(f"Satellite ID: {sat_id}<br>Total Connected Load: {total_load:.2f} Mbps")
-    traces.append(go.Scatter3d(x=xs, y=ys, z=zs, mode='markers', marker=dict(size=4, color='lightblue'), text=hover_texts, hovertemplate="%{text}<extra></extra>"))
-    
-    # 链路
-    for u, v, data in G.edges(data=True):
-        pos_u = positions[u]
-        pos_v = positions[v]
-        color = 'red' if data['load'] > data['capacity'] else 'gray'
-        load = data['load']
-        hover_text = f"Link {u}-{v}<br>Load: {load:.2f} Mbps<br>Capacity: {data['capacity']} Mbps"
-        traces.append(go.Scatter3d(x=[pos_u[0], pos_v[0]], y=[pos_u[1], pos_v[1]], z=[pos_u[2], pos_v[2]], mode='lines', line=dict(color=color, width=2), text=[hover_text, hover_text], hovertemplate="%{text}<extra></extra>"))
-    
-    return traces
-
-# 创建2D traces（矩形展开，类似原代码，但动态）
-def create_2d_traces(G, positions, num_planes, sats_per_plane):
-    traces = []
-    
-    # 可调整参数
-    node_size = 5
-    line_width = 1
-    x_spacing = 8.0
-    y_spacing = 8.0
-    ray_length = 0.5
-    
-    # 2D位置（固定矩形布局，位置不随时间变，但负载动态）
-    positions_2d = {}
-    for plane in range(num_planes):
-        for sat in range(sats_per_plane):
-            sat_id = plane * sats_per_plane + sat
-            positions_2d[sat_id] = (sat * x_spacing, -plane * y_spacing)
-    
-    # 卫星
-    xs, ys, hover_texts = [], [], []
-    for sat_id, (x, y) in positions_2d.items():
-        xs.append(x)
-        ys.append(y)
-        total_load = sum(G[sat_id][nbr]['load'] for nbr in G.neighbors(sat_id))
-        hover_texts.append(f"Satellite ID: {sat_id}<br>Total Connected Load: {total_load:.2f} Mbps")
-    traces.append(go.Scatter(x=xs, y=ys, mode='markers', marker=dict(size=node_size, color='lightblue'), text=hover_texts, hovertemplate="%{text}<extra></extra>"))
-    
-    # 链路（类似原2D逻辑，动态颜色基于负载）
-    for u, v, data in G.edges(data=True):
-        pos_u = positions_2d[u]
-        pos_v = positions_2d[v]
-        x_u, y_u = pos_u
-        x_v, y_v = pos_v
-        delta_x = abs(x_u - x_v)
-        delta_y = abs(y_u - y_v)
-        color = 'red' if data['load'] > data['capacity'] else 'gray'
-        load = data['load']
-        hover_text = f"Link {u}-{v}<br>Load: {load:.2f} Mbps<br>Capacity: {data['capacity']} Mbps"
-        
-        is_wrap = False
-        wrap_type = None
-        if delta_y == 0 and delta_x > (sats_per_plane * x_spacing) / 2:
-            is_wrap = True
-            wrap_type = 'horizontal'
-        elif delta_y > (num_planes - 1) * y_spacing / 2:  # 垂直环绕
-            is_wrap = True
-            wrap_type = 'vertical'
-        
-        if not is_wrap:
-            traces.append(go.Scatter(x=[x_u, x_v], y=[y_u, y_v], mode='lines', line=dict(color=color, width=line_width), text=[hover_text, hover_text], hovertemplate="%{text}<extra></extra>"))
-        else:
-            # 射线逻辑（同原）
-            if wrap_type == 'horizontal':
-                min_x = min(x_u, x_v)
-                max_x = max(x_u, x_v)
-                y = y_u
-                traces.append(go.Scatter(x=[min_x, min_x - ray_length], y=[y, y], mode='lines', line=dict(color=color, width=line_width), text=[hover_text, hover_text], hovertemplate="%{text}<extra></extra>"))
-                traces.append(go.Scatter(x=[max_x, max_x + ray_length], y=[y, y], mode='lines', line=dict(color=color, width=line_width), text=[hover_text, hover_text], hovertemplate="%{text}<extra></extra>"))
-            elif wrap_type == 'vertical':
-                min_y = min(y_u, y_v)
-                max_y = max(y_u, y_v)
-                bottom_x = x_u if y_u == min_y else x_v
-                top_x = x_v if y_v == max_y else x_u
-                traces.append(go.Scatter(x=[bottom_x, bottom_x], y=[min_y, min_y - ray_length], mode='lines', line=dict(color=color, width=line_width), text=[hover_text, hover_text], hovertemplate="%{text}<extra></extra>"))
-                traces.append(go.Scatter(x=[top_x, top_x], y=[max_y, max_y + ray_length], mode='lines', line=dict(color=color, width=line_width), text=[hover_text, hover_text], hovertemplate="%{text}<extra></extra>"))
-    
-    return traces
+    simulation_data['rounds'].append({
+        'round_num': round_num,
+        'timesteps': round_data
+    })
 
 # 计算拥塞（同原）
 def calculate_congestion(G):
@@ -298,18 +217,73 @@ def calculate_congestion(G):
 
 # 主函数
 def run_simulation():
+    # 收集所有参数和配置
+    parameters = {
+        'NUM_PLANES': NUM_PLANES,
+        'SAT_PER_PLANE': SAT_PER_PLANE,
+        'TOTAL_SATS': TOTAL_SATS,
+        'LINK_CAPACITY': LINK_CAPACITY,
+        'LINK_DELAY': LINK_DELAY,
+        'BASE_NUM_FLOWS': BASE_NUM_FLOWS,
+        'TIME_STEPS': TIME_STEPS,
+        'SIM_ROUNDS': SIM_ROUNDS,
+        'LOAD_FACTOR_START': LOAD_FACTOR_START,
+        'LOAD_FACTOR_END': LOAD_FACTOR_END,
+        'HOTSPOT_RATIO': HOTSPOT_RATIO,
+        'EARTH_RADIUS': EARTH_RADIUS,
+        'ORBIT_ALTITUDE': ORBIT_ALTITUDE,
+        'INCLINATION': INCLINATION,
+        'ORBIT_RADIUS': ORBIT_RADIUS,
+        'ORBITAL_PERIOD_MIN': ORBITAL_PERIOD_MIN,
+        'DELTA_T_MIN': DELTA_T_MIN,
+        'FLOW_TYPES': FLOW_TYPES
+    }
+    
+    # 创建日志目录
+    log_dir = 'simulation_logs'
+    os.makedirs(log_dir, exist_ok=True)
+    
+    # 保存参数到JSON文件
+    params_file = os.path.join(log_dir, 'parameters.json')
+    with open(params_file, 'w') as f:
+        json.dump(parameters, f, indent=4)
+    print(f"参数已保存到: {params_file}")
+    
+    # 初始化模拟数据结构
+    simulation_data = {
+        'parameters': parameters,
+        'rounds': []
+    }
+    
     G = create_walker_constellation()
     print(f"星座生成完成: {TOTAL_SATS} 颗卫星, {G.number_of_edges()} 条链路")
     
-    hotspot_sources = np.random.choice(TOTAL_SATS, size=10, replace=False)
-    hotspot_dests = np.random.choice(TOTAL_SATS, size=10, replace=False)
+    hotspot_sources = np.random.choice(TOTAL_SATS, size=10, replace=False).tolist()  # 转换为list以JSON序列化
+    hotspot_dests = np.random.choice(TOTAL_SATS, size=10, replace=False).tolist()
     
-    load_factors = np.linspace(LOAD_FACTOR_START, LOAD_FACTOR_END, SIM_ROUNDS)
+    # 保存热点到模拟数据
+    simulation_data['hotspot_sources'] = hotspot_sources
+    simulation_data['hotspot_dests'] = hotspot_dests
+    
+    load_factors = np.linspace(LOAD_FACTOR_START, LOAD_FACTOR_END, SIM_ROUNDS).tolist()
     
     for round_num, load_factor in enumerate(load_factors, 1):
         poisson_lambda = BASE_NUM_FLOWS * load_factor
         flows = generate_flows(poisson_lambda, load_factor, hotspot_sources, hotspot_dests)
-        simulate_round(G, flows, round_num)
+        # 保存本轮次的flows（原始生成flows）
+        simulation_data['rounds'].append({
+            'round_num': round_num,
+            'load_factor': load_factor,
+            'poisson_lambda': poisson_lambda,
+            'generated_flows': flows  # 注意：path会在模拟中更新，但这里保存初始
+        })
+        simulate_round(G, flows, round_num, simulation_data)
+    
+    # 保存所有模拟数据到JSON文件（每个时间步的最小单位数据）
+    data_file = os.path.join(log_dir, 'simulation_data.json')
+    with open(data_file, 'w') as f:
+        json.dump(simulation_data, f, indent=4, default=lambda x: float(x) if isinstance(x, np.float64) else x)
+    print(f"所有模拟数据已保存到: {data_file}")
 
 if __name__ == "__main__":
     run_simulation()
