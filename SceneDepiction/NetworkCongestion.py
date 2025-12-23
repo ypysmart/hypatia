@@ -3,7 +3,7 @@ import numpy as np
 from scipy import stats  # Pareto分布
 from collections import defaultdict
 import plotly.graph_objects as go  # 用于交互式3D可视化和动画
-import json  # 用于保存参数和数据
+import json  # 用于保存数据到JSON文件
 import os  # 用于创建目录
 
 # 参数设置（可调整以控制拥塞）
@@ -37,6 +37,20 @@ FLOW_TYPES = {
     'file': {'prob': 0.4, 'bw_shape': 1.5, 'bw_scale': 5, 'dur_shape': 1.8, 'dur_scale': 3},
     'voip': {'prob': 0.3, 'bw_shape': 2.0, 'bw_scale': 1, 'dur_shape': 2.0, 'dur_scale': 1}
 }
+
+# 保存目录
+SAVE_DIR = "SceneDepiction/simulation_data"
+os.makedirs(SAVE_DIR, exist_ok=True)
+
+# NumPy 类型编码器
+def np_encoder(o):
+    if isinstance(o, np.integer):
+        return int(o)
+    if isinstance(o, np.floating):
+        return float(o)
+    if isinstance(o, np.ndarray):
+        return o.tolist()
+    raise TypeError(f'Object of type {o.__class__.__name__} is not JSON serializable')
 
 # 生成星座（初始拓扑）
 def create_walker_constellation():
@@ -111,34 +125,21 @@ def generate_flows(poisson_lambda, load_factor, hotspot_sources, hotspot_dests):
     return flows
 
 # 模拟轮次（动态计算负载）
-def simulate_round(G, flows, round_num, simulation_data):
+def simulate_round(G, flows, round_num, params, hotspot_sources, hotspot_dests):
     frames_3d = []
     frames_2d = []
     current_time_min = 0.0
     
-    round_data = []  # 收集本轮次的所有时间步数据
-    
     for t in range(TIME_STEPS):
-        timestep_data = {
-            'round': round_num,
-            'timestep': t,
-            'current_time_min': current_time_min,
-            'positions': {},
-            'flows': [],
-            'edge_loads': {},
-            'congestion': {}
-        }
-        
         # 更新卫星位置（动态运动）
         positions = update_sat_positions(NUM_PLANES, SAT_PER_PLANE, INCLINATION, current_time_min)
-        timestep_data['positions'] = {int(k): v for k, v in positions.items()}  # 转换为JSON可序列化
         
         # 清空负载
         for u, v in G.edges():
             G[u][v]['load'] = 0
         
-        active_count = 0
         active_flows = []
+        active_count = 0
         for flow in flows:
             if flow['start'] <= t < flow['start'] + flow['dur']:
                 if flow['path'] is None or t % 5 == 0:  # 每5步重新计算路径（模拟动态路由）
@@ -154,49 +155,45 @@ def simulate_round(G, flows, round_num, simulation_data):
                     elif G.has_edge(v, u):
                         G[v][u]['load'] += flow['bw']
                 active_count += 1
-                # 保存flow细节（转换为可序列化）
-                active_flows.append({
-                    'type': flow['type'],
-                    'bw': flow['bw'],
-                    'dur': flow['dur'],
-                    'start': flow['start'],
-                    'src': flow['src'],
-                    'dst': flow['dst'],
-                    'path': flow['path'] if flow['path'] else []
-                })
-        
-        timestep_data['flows'] = active_flows
-        
-        # 保存所有边的负载和容量
-        edge_loads = {}
-        for u, v, data in G.edges(data=True):
-            edge_key = f"{min(u,v)}-{max(u,v)}"  # 无向边唯一键
-            edge_loads[edge_key] = {
-                'load': data['load'],
-                'capacity': data['capacity'],
-                'delay': data['delay']
-            }
-        timestep_data['edge_loads'] = edge_loads
+                active_flows.append(flow.copy())  # 保存活跃flow的副本
         
         congestion_ratio, avg_load, max_load = calculate_congestion(G)
-        timestep_data['congestion'] = {
+        print(f"轮次 {round_num} 时间步 {t}: 活跃flows={active_count}, 拥塞比例={congestion_ratio*100:.2f}%, 平均负载={avg_load:.2f} Mbps, 最大负载={max_load:.2f} Mbps")
+        
+        # 收集所有数据
+        data = {
+            'params': params,
+            'round_num': round_num,
+            'time_step': t,
+            'current_time_min': current_time_min,
+            'positions': {k: list(v) for k, v in positions.items()},  # 转换为列表以JSON序列化
+            'graph_nodes': list(G.nodes()),
+            'graph_edges': [
+                {
+                    'u': u,
+                    'v': v,
+                    'capacity': data['capacity'],
+                    'delay': data['delay'],
+                    'load': data['load']
+                } for u, v, data in G.edges(data=True)
+            ],
+            'flows': [f.copy() for f in flows],  # 所有flows
+            'active_flows': active_flows,  # 活跃flows
             'congestion_ratio': congestion_ratio,
             'avg_load': avg_load,
             'max_load': max_load,
-            'active_flows_count': active_count
+            'hotspot_sources': hotspot_sources.tolist(),
+            'hotspot_dests': hotspot_dests.tolist()
         }
         
-        print(f"轮次 {round_num} 时间步 {t}: 活跃flows={active_count}, 拥塞比例={congestion_ratio*100:.2f}%, 平均负载={avg_load:.2f} Mbps, 最大负载={max_load:.2f} Mbps")
+        # 保存到文件
+        file_path = os.path.join(SAVE_DIR, f"round_{round_num}_timestep_{t}.json")
+        with open(file_path, 'w') as f:
+            json.dump(data, f, indent=4, default=np_encoder)
+        #print(f"数据保存到: {file_path}")
         
-        round_data.append(timestep_data)
-        
-        # 更新时间
+        # 更新当前时间
         current_time_min += DELTA_T_MIN
-    
-    simulation_data['rounds'].append({
-        'round_num': round_num,
-        'timesteps': round_data
-    })
 
 # 计算拥塞（同原）
 def calculate_congestion(G):
@@ -217,8 +214,8 @@ def calculate_congestion(G):
 
 # 主函数
 def run_simulation():
-    # 收集所有参数和配置
-    parameters = {
+    # 收集所有参数
+    params = {
         'NUM_PLANES': NUM_PLANES,
         'SAT_PER_PLANE': SAT_PER_PLANE,
         'TOTAL_SATS': TOTAL_SATS,
@@ -236,54 +233,29 @@ def run_simulation():
         'ORBIT_RADIUS': ORBIT_RADIUS,
         'ORBITAL_PERIOD_MIN': ORBITAL_PERIOD_MIN,
         'DELTA_T_MIN': DELTA_T_MIN,
-        'FLOW_TYPES': FLOW_TYPES
+        'FLOW_TYPES': FLOW_TYPES,
+        'SAVE_DIR': SAVE_DIR
     }
     
-    # 创建日志目录
-    log_dir = 'simulation_logs'
-    os.makedirs(log_dir, exist_ok=True)
-    
-    # 保存参数到JSON文件
-    params_file = os.path.join(log_dir, 'parameters.json')
+    # 保存参数到文件
+    params_file = os.path.join(SAVE_DIR, "simulation_params.json")
     with open(params_file, 'w') as f:
-        json.dump(parameters, f, indent=4)
-    print(f"参数已保存到: {params_file}")
-    
-    # 初始化模拟数据结构
-    simulation_data = {
-        'parameters': parameters,
-        'rounds': []
-    }
+        json.dump(params, f, indent=4)
+    print(f"参数保存到: {params_file}")
     
     G = create_walker_constellation()
     print(f"星座生成完成: {TOTAL_SATS} 颗卫星, {G.number_of_edges()} 条链路")
     
-    hotspot_sources = np.random.choice(TOTAL_SATS, size=10, replace=False).tolist()  # 转换为list以JSON序列化
-    hotspot_dests = np.random.choice(TOTAL_SATS, size=10, replace=False).tolist()
+    hotspot_sources = np.random.choice(TOTAL_SATS, size=10, replace=False)
+    hotspot_dests = np.random.choice(TOTAL_SATS, size=10, replace=False)
     
-    # 保存热点到模拟数据
-    simulation_data['hotspot_sources'] = hotspot_sources
-    simulation_data['hotspot_dests'] = hotspot_dests
-    
-    load_factors = np.linspace(LOAD_FACTOR_START, LOAD_FACTOR_END, SIM_ROUNDS).tolist()
+    load_factors = np.linspace(LOAD_FACTOR_START, LOAD_FACTOR_END, SIM_ROUNDS)
     
     for round_num, load_factor in enumerate(load_factors, 1):
+        print(f"=================第{round_num}轮次=================")
         poisson_lambda = BASE_NUM_FLOWS * load_factor
         flows = generate_flows(poisson_lambda, load_factor, hotspot_sources, hotspot_dests)
-        # 保存本轮次的flows（原始生成flows）
-        simulation_data['rounds'].append({
-            'round_num': round_num,
-            'load_factor': load_factor,
-            'poisson_lambda': poisson_lambda,
-            'generated_flows': flows  # 注意：path会在模拟中更新，但这里保存初始
-        })
-        simulate_round(G, flows, round_num, simulation_data)
-    
-    # 保存所有模拟数据到JSON文件（每个时间步的最小单位数据）
-    data_file = os.path.join(log_dir, 'simulation_data.json')
-    with open(data_file, 'w') as f:
-        json.dump(simulation_data, f, indent=4, default=lambda x: float(x) if isinstance(x, np.float64) else x)
-    print(f"所有模拟数据已保存到: {data_file}")
-
+        simulate_round(G, flows, round_num, params, hotspot_sources, hotspot_dests)
+        print(f"=================第{round_num}轮次=================\n\n")
 if __name__ == "__main__":
     run_simulation()

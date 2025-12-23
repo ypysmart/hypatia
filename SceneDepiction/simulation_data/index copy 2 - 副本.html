@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LEO 卫星网络流量拥塞可视化</title>
+    <style>
+        body { margin: 0; overflow: hidden; background-color: #000; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        #canvas-container { width: 100vw; height: 100vh; display: block; }
+        #ui-layer {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            color: #00ffcc;
+            background: rgba(0, 0, 0, 0.8);
+            padding: 20px;
+            border: 1px solid #00ffcc;
+            border-radius: 8px;
+            pointer-events: none; /* 让鼠标事件穿透到 3D 场景 */
+            box-shadow: 0 0 15px rgba(0, 255, 204, 0.2);
+            min-width: 250px;
+        }
+        h1 { margin: 0 0 10px 0; font-size: 18px; text-transform: uppercase; letter-spacing: 1px; border-bottom: 1px solid #444; padding-bottom: 5px; color: #fff; }
+        .stat-row { display: flex; justify-content: space-between; margin-bottom: 5px; font-size: 14px; }
+        .stat-value { font-weight: bold; }
+        .legend { margin-top: 15px; border-top: 1px solid #444; padding-top: 10px; }
+        .legend-item { display: flex; align-items: center; font-size: 12px; margin-bottom: 4px; color: #ccc; }
+        .color-box { width: 12px; height: 12px; margin-right: 8px; border-radius: 2px; }
+        
+        #loading {
+            position: absolute;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            color: white;
+            font-size: 24px;
+            background: rgba(0,0,0,0.9);
+            padding: 40px;
+            border-radius: 10px;
+            z-index: 999;
+            transition: opacity 0.5s;
+        }
+    </style>
+    <!-- 引入 Three.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <!-- 引入 OrbitControls -->
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+</head>
+<body>
+
+    <div id="loading">正在加载数据... <span id="loading-progress">0/50</span></div>
+
+    <div id="ui-layer">
+        <h1>网络状态监控</h1>
+        <div class="stat-row"><span>活跃 Flows:</span> <span id="stat-active" class="stat-value">0</span></div>
+        <div class="stat-row"><span>总链路数:</span> <span id="stat-links" class="stat-value">0</span></div>
+        <div class="stat-row"><span>拥塞比例:</span> <span id="stat-congestion" class="stat-value">0%</span></div>
+        <div class="stat-row"><span>平均负载:</span> <span id="stat-avg-load" class="stat-value">0 Mbps</span></div>
+        <div class="stat-row"><span>最大负载:</span> <span id="stat-max-load" class="stat-value">0 Mbps</span></div>
+        <div class="stat-row"><span>模拟时间:</span> <span id="stat-time" class="stat-value">0 min</span></div>
+        <div class="stat-row"><span>当前轮次/时间步:</span> <span id="stat-round-step" class="stat-value">1/0</span></div>
+
+        <div class="legend">
+            <div class="legend-item"><div class="color-box" style="background: #003300;"></div>空闲 (< 30%)</div>
+            <div class="legend-item"><div class="color-box" style="background: #00ff00;"></div>正常 (30-70%)</div>
+            <div class="legend-item"><div class="color-box" style="background: #ffff00;"></div>繁忙 (70-100%)</div>
+            <div class="legend-item"><div class="color-box" style="background: #ff0000; box-shadow: 0 0 5px red;"></div>拥塞 (> 100%)</div>
+            <div class="legend-item"><div class="color-box" style="background: #00ffff; box-shadow: 0 0 5px cyan;"></div>路由路径</div>
+        </div>
+    </div>
+
+    <div id="canvas-container"></div>
+
+<script>
+/**
+ * 核心配置参数 (初始值，从JSON加载覆盖)
+ */
+let CONFIG = {
+    NUM_PLANES: 25,
+    SAT_PER_PLANE: 40,
+    LINK_CAPACITY: 10000, // Mbps
+    // 视觉缩放比例 (地球半径为 10 单位)
+    EARTH_RADIUS_VISUAL: 10,
+    ORBIT_ALTITUDE_KM: 550,
+    EARTH_RADIUS_KM: 6371,
+    INCLINATION_DEG: 53,
+    ORBITAL_PERIOD_MIN: 95,
+    TIME_SCALE: 0.1, // 动画速度乘数（不再使用，因为位置从JSON取）
+    FRAME_INTERVAL: 2000 // 每个timestep帧切换间隔（毫秒）
+};
+
+// 计算轨道视觉半径
+let ORBIT_RADIUS_VISUAL = CONFIG.EARTH_RADIUS_VISUAL * ((CONFIG.EARTH_RADIUS_KM + CONFIG.ORBIT_ALTITUDE_KM) / CONFIG.EARTH_RADIUS_KM);
+
+/**
+ * 逻辑类: 卫星网络数据管理 (从JSON加载)
+ */
+class SatelliteNetwork {
+    constructor() {
+        this.totalSats = 0; // 从params加载
+        this.positions = new Float32Array(0); // 当前位置
+        this.edges = []; // {u, v, load, capacity}
+        this.activeFlows = []; // 当前活跃flows
+        this.currentTimeMin = 0;
+        this.congestionRatio = 0;
+        this.avgLoad = 0;
+        this.maxLoad = 0;
+        this.roundNum = 1;
+        this.timeStep = 0;
+    }
+
+    // 从JSON数据更新当前帧
+    updateFromJson(data) {
+        if (!data) return;
+
+        this.totalSats = data.params.TOTAL_SATS;
+        this.currentTimeMin = data.current_time_min;
+        this.congestionRatio = data.congestion_ratio;
+        this.avgLoad = data.avg_load;
+        this.maxLoad = data.max_load;
+        this.roundNum = data.round_num;
+        this.timeStep = data.time_step;
+
+        // 更新位置
+        this.positions = new Float32Array(this.totalSats * 3);
+        const posObj = data.positions;
+        Object.keys(posObj).forEach((satId) => {
+            const idx = parseInt(satId) * 3;
+            const [x, y, z] = posObj[satId];
+            // 缩放到视觉比例
+            const scale = ORBIT_RADIUS_VISUAL / data.params.ORBIT_RADIUS;
+            this.positions[idx] = x * scale;
+            this.positions[idx + 1] = y * scale;
+            this.positions[idx + 2] = z * scale;
+        });
+
+        // 更新边
+        this.edges = data.graph_edges.map(edge => ({
+            u: edge.u,
+            v: edge.v,
+            load: edge.load,
+            capacity: edge.capacity
+        }));
+
+        // 更新活跃flows (用于路径显示)
+        this.activeFlows = data.active_flows || [];
+    }
+}
+
+/**
+ * 3D 可视化类
+ */
+class Visualizer {
+    constructor(network) {
+        this.network = network;
+        this.scene = new THREE.Scene();
+        this.camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        this.renderer = new THREE.WebGLRenderer({ antialias: true });
+        this.renderer.setSize(window.innerWidth, window.innerHeight);
+        document.getElementById('canvas-container').appendChild(this.renderer.domElement);
+
+        this.camera.position.set(0, 0, 30);
+
+        this.controls = new THREE.OrbitControls(this.camera, this.renderer.domElement);
+        this.controls.enableDamping = true;
+        this.controls.dampingFactor = 0.05;
+
+        this.createEarth();
+        this.createSatellites();
+        this.createLinks();
+        this.createPathLines();
+
+        window.addEventListener('resize', () => this.onResize());
+    }
+
+    createEarth() {
+        const geometry = new THREE.SphereGeometry(CONFIG.EARTH_RADIUS_VISUAL, 32, 32);
+        const material = new THREE.MeshBasicMaterial({ color: 0x003366, transparent: true, opacity: 0.5 });
+        const earth = new THREE.Mesh(geometry, material);
+        this.scene.add(earth);
+
+        const wireGeo = new THREE.WireframeGeometry(geometry);
+        const wireMat = new THREE.LineBasicMaterial({ color: 0x335588, transparent: true, opacity: 0.3 });
+        const wireframe = new THREE.LineSegments(wireGeo, wireMat);
+        this.scene.add(wireframe);
+    }
+
+    createSatellites() {
+        const geometry = new THREE.SphereGeometry(0.15, 8, 8);
+        const material = new THREE.MeshBasicMaterial({ color: 0xffffff });
+        this.satMesh = new THREE.InstancedMesh(geometry, material, this.network.totalSats);
+        this.scene.add(this.satMesh);
+
+        const dummy = new THREE.Object3D();
+        for (let i = 0; i < this.network.totalSats; i++) {
+            dummy.position.set(0, 0, 0);
+            dummy.updateMatrix();
+            this.satMesh.setMatrixAt(i, dummy.matrix);
+        }
+    }
+
+    createLinks() {
+        const geometry = new THREE.BufferGeometry();
+        const positions = new Float32Array(0); // 动态分配
+        const colors = new Float32Array(0);
+        geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+        geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+
+        const material = new THREE.LineBasicMaterial({ 
+            vertexColors: true, 
+            transparent: true, 
+            opacity: 0.6,
+            blending: THREE.AdditiveBlending 
+        });
+
+        this.linkMesh = new THREE.LineSegments(geometry, material);
+        this.linkMesh.frustumCulled = false;
+        this.scene.add(this.linkMesh);
+    }
+
+    createPathLines() {
+        this.pathGroup = new THREE.Group();
+        this.scene.add(this.pathGroup);
+    }
+
+    updateSatellites() {
+        if (this.network.totalSats === 0) return;
+
+        const dummy = new THREE.Object3D();
+        const pos = this.network.positions;
+
+        for (let i = 0; i < this.network.totalSats; i++) {
+            dummy.position.set(pos[i*3], pos[i*3+1], pos[i*3+2]);
+            dummy.updateMatrix();
+            this.satMesh.setMatrixAt(i, dummy.matrix);
+        }
+        this.satMesh.instanceMatrix.needsUpdate = true;
+    }
+
+    updateLinks() {
+        if (this.network.edges.length === 0) return;
+
+        const edges = this.network.edges;
+        const pos = this.network.positions;
+        const positions = new Float32Array(edges.length * 6);
+        const colors = new Float32Array(edges.length * 6);
+
+        for (let i = 0; i < edges.length; i++) {
+            const e = edges[i];
+            const u = e.u;
+            const v = e.v;
+
+            const idx = i * 6;
+            positions[idx] = pos[u*3];
+            positions[idx+1] = pos[u*3+1];
+            positions[idx+2] = pos[u*3+2];
+            positions[idx+3] = pos[v*3];
+            positions[idx+4] = pos[v*3+1];
+            positions[idx+5] = pos[v*3+2];
+
+            const ratio = e.load / e.capacity;
+            let r, g, b;
+            if (ratio > 1.0) { r = 1.0; g = 0.0; b = 0.0; }
+            else if (ratio > 0.7) { r = 1.0; g = 1.0; b = 0.0; }
+            else if (ratio > 0.3) { r = 0.0; g = 1.0; b = 0.0; }
+            else { r = 0.0; g = 0.2; b = 0.0; }
+
+            colors[idx] = r; colors[idx+1] = g; colors[idx+2] = b;
+            colors[idx+3] = r; colors[idx+4] = g; colors[idx+5] = b;
+        }
+
+        this.linkMesh.geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+        this.linkMesh.geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+        this.linkMesh.geometry.attributes.position.needsUpdate = true;
+        this.linkMesh.geometry.attributes.color.needsUpdate = true;
+    }
+
+    updatePaths() {
+        while (this.pathGroup.children.length > 0) {
+            this.pathGroup.remove(this.pathGroup.children[0]);
+        }
+
+        const displayLimit = 20;
+        const flows = this.network.activeFlows;
+        const pos = this.network.positions;
+
+        let count = 0;
+        for (let i = flows.length - 1; i >= 0 && count < displayLimit; i--) {
+            const flow = flows[i];
+            if (!flow.path || flow.path.length < 2) continue;
+
+            const points = [];
+            for (let nodeId of flow.path) {
+                points.push(new THREE.Vector3(pos[nodeId*3], pos[nodeId*3+1], pos[nodeId*3+2]));
+            }
+
+            const geometry = new THREE.BufferGeometry().setFromPoints(points);
+            const material = new THREE.LineBasicMaterial({ color: 0x00ffff, linewidth: 2, transparent: true, opacity: 0.8 });
+            const line = new THREE.Line(geometry, material);
+            this.pathGroup.add(line);
+            count++;
+        }
+    }
+
+    onResize() {
+        this.camera.aspect = window.innerWidth / window.innerHeight;
+        this.camera.updateProjectionMatrix();
+        this.renderer.setSize(window.innerWidth, window.innerHeight);
+    }
+}
+
+/**
+ * 加载所有JSON数据
+ */
+async function loadAllData() {
+    const progressEl = document.getElementById('loading-progress');
+    const dataFrames = [];
+    let loaded = 0;
+
+    // 加载全局参数
+    const paramsResponse = await fetch('SceneDepiction/simulation_data/simulation_params.json');
+    const params = await paramsResponse.json();
+    CONFIG = { ...CONFIG, ...params }; // 覆盖CONFIG
+    ORBIT_RADIUS_VISUAL = CONFIG.EARTH_RADIUS_VISUAL * (CONFIG.ORBIT_RADIUS / CONFIG.EARTH_RADIUS); // 重新计算
+
+    // 加载所有round和timestep
+    for (let round = 1; round <= CONFIG.SIM_ROUNDS; round++) {
+        for (let step = 0; step < CONFIG.TIME_STEPS; step++) {
+            const url = `SceneDepiction/simulation_data/round_${round}_timestep_${step}.json`;
+            try {
+                const response = await fetch(url);
+                const data = await response.json();
+                dataFrames.push(data);
+                loaded++;
+                progressEl.innerText = `${loaded}/${CONFIG.SIM_ROUNDS * CONFIG.TIME_STEPS}`;
+            } catch (err) {
+                console.error(`加载 ${url} 失败:`, err);
+            }
+        }
+    }
+
+    return dataFrames;
+}
+
+/**
+ * 主程序
+ */
+async function main() {
+    // 加载数据
+    const dataFrames = await loadAllData();
+    if (dataFrames.length === 0) {
+        alert('未加载到任何数据！');
+        return;
+    }
+
+    // 初始化网络和可视化
+    const network = new SatelliteNetwork();
+    const visualizer = new Visualizer(network);
+
+    // 隐藏加载
+    document.getElementById('loading').style.display = 'none';
+
+    // UI 元素
+    const uiActive = document.getElementById('stat-active');
+    const uiLinks = document.getElementById('stat-links');
+    const uiCongest = document.getElementById('stat-congestion');
+    const uiAvg = document.getElementById('stat-avg-load');
+    const uiMax = document.getElementById('stat-max-load');
+    const uiTime = document.getElementById('stat-time');
+    const uiRoundStep = document.getElementById('stat-round-step');
+
+    uiLinks.innerText = dataFrames[0].graph_edges.length; // 假设所有帧链路数相同
+
+    // 动画循环
+    let currentFrame = 0;
+    let lastSwitchTime = performance.now();
+
+    function animate() {
+        requestAnimationFrame(animate);
+
+        // 每隔FRAME_INTERVAL切换帧
+        const now = performance.now();
+        if (now - lastSwitchTime > CONFIG.FRAME_INTERVAL) {
+            network.updateFromJson(dataFrames[currentFrame]);
+            currentFrame = (currentFrame + 1) % dataFrames.length;
+            lastSwitchTime = now;
+        }
+
+        // 更新视觉
+        visualizer.updateSatellites();
+        visualizer.updateLinks();
+        visualizer.updatePaths();
+        visualizer.controls.update();
+
+        // 渲染
+        visualizer.renderer.render(visualizer.scene, visualizer.camera);
+
+        // 更新UI
+        uiActive.innerText = network.activeFlows.length;
+        uiCongest.innerText = (network.congestionRatio * 100).toFixed(2) + '%';
+        if (network.congestionRatio > 0) uiCongest.style.color = '#ff3333';
+        else uiCongest.style.color = '#00ffcc';
+        uiAvg.innerText = network.avgLoad.toFixed(0) + ' Mbps';
+        uiMax.innerText = network.maxLoad.toFixed(0) + ' Mbps';
+        uiTime.innerText = network.currentTimeMin.toFixed(1) + ' min';
+        uiRoundStep.innerText = `${network.roundNum}/${network.timeStep}`;
+    }
+
+    animate();
+}
+
+main().catch(err => console.error(err));
+
+</script>
+</body>
+</html>
