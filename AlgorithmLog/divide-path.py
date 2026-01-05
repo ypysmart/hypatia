@@ -87,7 +87,7 @@ def parse_send_data(filename):
 
 def main():
     # 原始文件名
-    input_file = 'AlgorithmLog/cwndconsole14.txt'  # 请替换为您的实际文件名
+    input_file = 'AlgorithmLog/cwndconsole59.txt'  # 请替换为您的实际文件名
     
     # 第一步：分类文件
     print("开始分类文件...")
@@ -191,7 +191,7 @@ def merge_send_data(existing_data, new_data):
             existing_data[path_num][key].extend(new_data[path_num][key])
     return existing_data
 
-def plot_path_curves(path_data, send_data, save_dir="AlgorithmLog/plots4"):
+def plot_path_curves(path_data, send_data, save_dir="AlgorithmLog/plots59"):
     """绘制所有曲线并保存为PNG文件"""
     # 创建保存目录
     if not os.path.exists(save_dir):

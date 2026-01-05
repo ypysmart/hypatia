@@ -81,14 +81,17 @@ local_shell.remove_force_recursive("temp/gen_data")
 local_shell.make_full_dir("temp/gen_data")
 
 # Both dynamic state algorithms should yield the same path and RTT
+# for dynamic_state_algorithm in [
+#     "algorithm_free_one_only_over_isls",
+#     "algorithm_free_gs_one_sat_many_only_over_isls"
+# ]:
 for dynamic_state_algorithm in [
-    "algorithm_free_one_only_over_isls",
-    "algorithm_free_gs_one_sat_many_only_over_isls"
+    "algorithm_free_gs_many_sat_many_only_over_isls"
 ]:
 
     # Specific outcomes
     output_generated_data_dir = "temp/gen_data"
-    num_threads = 6
+    num_threads = 8
     time_step_ms = 100
     duration_s = 200
 
@@ -161,6 +164,13 @@ for dynamic_state_algorithm in [
     if not os.path.isdir(output_generated_data_dir + "/" + name):
         os.makedirs(output_generated_data_dir + "/" + name)
 
+
+
+
+#18,Rio-de-Janeiro,-22.902780,-43.207500,0.000000,4284573.241489,-4024537.642061,-2466804.550393
+#73,Sankt-Peterburg-(Saint-Petersburg),59.929858,30.326228,0.000000,2765465.818184,1617706.410247,5496564.164974
+# 0,Manila,14.6042,120.9822,0
+# 1,Dalian,38.913811,121.602322,0
     # Ground stations
     print("Generating ground stations...")
     with open(output_generated_data_dir + "/" + name + "/ground_stations.basic.txt", "w+") as f_out:
@@ -219,10 +229,10 @@ for dynamic_state_algorithm in [
         gsl_gs_max_agg_bandwidth = 1.0
         gsl_interfaces_per_gs = 1
     else:  # 新算法或其他
-        gsl_interfaces_per_satellite = len(ground_stations) * 3  # 每个卫星有足够接口（例如2 GS * 3 = 6）
-        gsl_satellite_max_agg_bandwidth = len(ground_stations) * 3  # 聚合带宽匹配接口数
-        gsl_gs_max_agg_bandwidth = 3.0  # 每个GS聚合3.0
-        gsl_interfaces_per_gs = 3  # 每个GS有3个接口
+        gsl_interfaces_per_satellite = len(ground_stations) * 2  # 修改为 *2（例如2 GS * 2 = 4 接口）
+        gsl_satellite_max_agg_bandwidth = len(ground_stations) * 2  # 聚合带宽匹配接口数
+        gsl_gs_max_agg_bandwidth = 2.0  # 每个GS聚合2.0
+        gsl_interfaces_per_gs = 2  # 每个GS有2个接口
 
     print("Generating GSL interfaces info..")
     satgen.generate_simple_gsl_interfaces_info(
@@ -232,7 +242,7 @@ for dynamic_state_algorithm in [
         gsl_interfaces_per_satellite,  # 每个卫星的GSL接口数
         gsl_interfaces_per_gs,  # 每个地面站的接口数（改为3）
         gsl_satellite_max_agg_bandwidth,  # 卫星聚合带宽
-        gsl_gs_max_agg_bandwidth  # 地面站聚合带宽（改为3.0）
+        gsl_gs_max_agg_bandwidth  # 地面站聚合带宽（改为2.0）
     )
 
     # Forwarding state

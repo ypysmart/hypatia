@@ -37,8 +37,8 @@ def algorithm_free_gs_many_sat_many_only_over_isls(
             if n >= len(satellites):
                 raise ValueError("Graph cannot contain satellite-to-ground-station links")
 
-    # 检查接口条件：卫星接口 >= GS数量 * 3, GS接口 == 3, GS聚合带宽 == 3.0
-    num_gs_interfaces = 3  # 固定为3
+    # 检查接口条件：卫星接口 >= GS数量 * 3, GS接口 == 3, GS聚合带宽 == 3.0//改为2了
+    num_gs_interfaces = 2  # 固定为2
     for i in range(len(list_gsl_interfaces_info)):
         if i < len(satellites):
             if list_gsl_interfaces_info[i]["number_of_interfaces"] < len(ground_stations) * num_gs_interfaces:

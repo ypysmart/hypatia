@@ -97,7 +97,12 @@ GSLChannel::TransmitTo(Ptr<const Packet> p, Ptr<GSLNetDevice> srcNetDevice, Ptr<
           "Sending packet " << p << " from node " << srcNetDevice->GetNode()->GetId()
           << " to " << destNetDevice->GetNode()->GetId() << " with delay " << delay
   );
-
+// 在 GSLChannel::TransmitTo 中（地面-卫星 / 卫星-地面）
+// std::cout << "****************************卫星链路传播时延第一处***********************************" << std::endl;
+// std::cout << "GSL pkt-uid=" << p->GetUid() 
+//           << " from node " << srcNetDevice->GetNode()->GetId()
+//           << " to " << destNetDevice->GetNode()->GetId() 
+//           << " delay=" << delay.GetSeconds()*1000 << " ms" << std::endl;
   // Distributed mode is not enabled
   NS_ABORT_MSG_UNLESS(isSameSystem, "MPI distributed mode is currently not supported by the GSL channel.");
 

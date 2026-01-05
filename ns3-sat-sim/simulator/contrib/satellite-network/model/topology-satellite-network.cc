@@ -397,45 +397,45 @@ namespace ns3 {
 
         }
         std::cout << "    >> Finished assigning IPs" << std::endl;
-        // ========================================
-        // 新增：打印所有节点的接口 IP 地址
-        // ========================================
-        std::cout << "    >> Printing all node interface IP addresses:" << std::endl;
-        for (uint32_t node_idx = 0; node_idx < m_allNodes.GetN(); ++node_idx) {
-            Ptr<Node> node = m_allNodes.Get(node_idx);
-            Ptr<Ipv4> ipv4 = node->GetObject<Ipv4>();
-            if (!ipv4) continue;
+        // // ========================================
+        // // 新增：打印所有节点的接口 IP 地址
+        // // ========================================
+        // std::cout << "    >> Printing all node interface IP addresses:" << std::endl;
+        // for (uint32_t node_idx = 0; node_idx < m_allNodes.GetN(); ++node_idx) {
+        //     Ptr<Node> node = m_allNodes.Get(node_idx);
+        //     Ptr<Ipv4> ipv4 = node->GetObject<Ipv4>();
+        //     if (!ipv4) continue;
 
-            bool is_sat = (node_idx < m_satelliteNodes.GetN());
-            std::string node_type = is_sat ? "Satellite" : "GroundStation";
-            uint32_t global_id = node_idx;
-            uint32_t type_id = is_sat ? global_id : (global_id - m_satelliteNodes.GetN());
+        //     bool is_sat = (node_idx < m_satelliteNodes.GetN());
+        //     std::string node_type = is_sat ? "Satellite" : "GroundStation";
+        //     uint32_t global_id = node_idx;
+        //     uint32_t type_id = is_sat ? global_id : (global_id - m_satelliteNodes.GetN());
 
-            std::cout << "      Node " << global_id
-                      << " (" << node_type << " ID: " << type_id << "):" << std::endl;
+        //     std::cout << "      Node " << global_id
+        //               << " (" << node_type << " ID: " << type_id << "):" << std::endl;
 
-            // 从接口 1 开始（接口 0 是 loopback）
-            for (uint32_t if_idx = 1; if_idx < ipv4->GetNInterfaces(); ++if_idx) {
-                Ipv4InterfaceAddress addr = ipv4->GetAddress(if_idx, 0);
-                Ipv4Address ip = addr.GetLocal();
-                Ipv4Mask mask = addr.GetMask();
+        //     // 从接口 1 开始（接口 0 是 loopback）
+        //     for (uint32_t if_idx = 1; if_idx < ipv4->GetNInterfaces(); ++if_idx) {
+        //         Ipv4InterfaceAddress addr = ipv4->GetAddress(if_idx, 0);
+        //         Ipv4Address ip = addr.GetLocal();
+        //         Ipv4Mask mask = addr.GetMask();
 
-                // 获取对应的 NetDevice，便于查看是 ISL 还是 GSL
-                Ptr<NetDevice> dev = ipv4->GetNetDevice(if_idx);
-                std::string dev_type = "Unknown";
-                if (DynamicCast<PointToPointLaserNetDevice>(dev)) {
-                    dev_type = "ISL";
-                } else if (dev) {
-                    dev_type = "GSL";
-                }
+        //         // 获取对应的 NetDevice，便于查看是 ISL 还是 GSL
+        //         Ptr<NetDevice> dev = ipv4->GetNetDevice(if_idx);
+        //         std::string dev_type = "Unknown";
+        //         if (DynamicCast<PointToPointLaserNetDevice>(dev)) {
+        //             dev_type = "ISL";
+        //         } else if (dev) {
+        //             dev_type = "GSL";
+        //         }
 
-                std::cout << "        Interface " << if_idx
-                          << " (" << dev_type << "): "
-                          << ip << " / " << mask << std::endl;
-            }
-        }
-        std::cout << "    >> Finished printing node IP addresses" << std::endl;
-        // ========================================
+        //         std::cout << "        Interface " << if_idx
+        //                   << " (" << dev_type << "): "
+        //                   << ip << " / " << mask << std::endl;
+        //     }
+        // }
+        // std::cout << "    >> Finished printing node IP addresses" << std::endl;
+        // // ========================================
 
         
         // Remove the traffic control layer (must be done here, else the Ipv4 helper will assign a default one)

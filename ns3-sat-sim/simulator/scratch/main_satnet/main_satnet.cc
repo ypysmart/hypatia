@@ -166,15 +166,20 @@ int main(int argc, char *argv[]) {
     // 拥塞控制算法选择
     if (ccType == QuicSocketBase::OLIA){
         ccTypeId = MpQuicCongestionOps::GetTypeId ();
+            std::cout << "****************************当前设置拥塞控制算法是是OLIA***********************************" << std::endl;
+
     }
     if(ccType == QuicSocketBase::QuicNewReno){
         ccTypeId = QuicCongestionOps::GetTypeId ();
+                    std::cout << "****************************当前设置拥塞控制算法是是QuicNewReno***********************************" << std::endl;
     }
-    //这里的缓冲区是设置的所有节点吗？应该放在拓扑构建中
-    Config::SetDefault ("ns3::QuicSocketBase::SocketSndBufSize",UintegerValue (40000000));
-    Config::SetDefault ("ns3::QuicStreamBase::StreamSndBufSize",UintegerValue (40000000));
-    Config::SetDefault ("ns3::QuicSocketBase::SocketRcvBufSize",UintegerValue (40000000));
-    Config::SetDefault ("ns3::QuicStreamBase::StreamRcvBufSize",UintegerValue (40000000));
+        int BufSize = 50000000;
+
+    Config::SetDefault ("ns3::QuicSocketBase::SocketSndBufSize",UintegerValue   (BufSize));
+    Config::SetDefault ("ns3::QuicStreamBase::StreamSndBufSize",UintegerValue  (BufSize));
+    Config::SetDefault ("ns3::QuicSocketBase::SocketRcvBufSize",UintegerValue    (BufSize));
+    Config::SetDefault ("ns3::QuicStreamBase::StreamRcvBufSize",UintegerValue   (BufSize));
+    std::cout << "当前设置的BufSize是" << (BufSize/1000000 )<<"MB"<< std::endl;
 
     // 多路径QUIC启用
     Config::SetDefault ("ns3::QuicSocketBase::EnableMultipath",BooleanValue(true));//可以考虑先不启用
@@ -209,31 +214,30 @@ std::string scheduleFile = basicSimulation->GetConfigParamOrFail("quic_flow_sche
     // TcpFlowScheduler tcpFlowScheduler(basicSimulation, topology); // Requires enable_tcp_flow_scheduler=true
     QuicFlowScheduler quicFlowScheduler(basicSimulation, topology);
     // Schedule UDP bursts
-    UdpBurstScheduler udpBurstScheduler(basicSimulation, topology); // Requires enable_udp_burst_scheduler=true
+    //UdpBurstScheduler udpBurstScheduler(basicSimulation, topology); // Requires enable_udp_burst_scheduler=true
 
     // Schedule pings
-    PingmeshScheduler pingmeshScheduler(basicSimulation, topology); // Requires enable_pingmesh_scheduler=true
-    AsciiTraceHelper asciiTraceHelper;
-    std::ostringstream fileName;
-    fileName <<  "./scheduler" << schedulerType << "-rx" << ".txt";
-    Ptr<OutputStreamWrapper> stream = asciiTraceHelper.CreateFileStream (fileName.str ());
+    // PingmeshScheduler pingmeshScheduler(basicSimulation, topology); // Requires enable_pingmesh_scheduler=true
+    // AsciiTraceHelper asciiTraceHelper;
+    // std::ostringstream fileName;
+    // Ptr<OutputStreamWrapper> stream = asciiTraceHelper.CreateFileStream (fileName.str ());
   
 
-    FlowMonitorHelper flowmon;
-    Ptr<FlowMonitor> monitor = flowmon.InstallAll ();
+    // FlowMonitorHelper flowmon;
+    // Ptr<FlowMonitor> monitor = flowmon.InstallAll ();
     // ThroughputMonitor(&flowmon, monitor, stream); 
     // Run schedulerType 
     basicSimulation->Run();
-    ThroughputMonitor(&flowmon, monitor, stream); 
+  //  ThroughputMonitor(&flowmon, monitor, stream); 
 
     // Write flow results
     // quicFlowScheduler.WriteResults();
 
     // Write UDP burst results
-    udpBurstScheduler.WriteResults();
+    //udpBurstScheduler.WriteResults();
 
     // Write pingmesh results
-    pingmeshScheduler.WriteResults();
+    //pingmeshScheduler.WriteResults();
 
     // Collect utilization statistics
     topology->CollectUtilizationStatistics();

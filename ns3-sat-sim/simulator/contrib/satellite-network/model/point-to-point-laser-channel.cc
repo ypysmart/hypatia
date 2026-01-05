@@ -100,7 +100,12 @@ PointToPointLaserChannel::TransmitStart (
   Ptr<MobilityModel> senderMobility = src->GetNode()->GetObject<MobilityModel>();
   Ptr<MobilityModel> receiverMobility = node_other_end->GetObject<MobilityModel>();
   Time delay = this->GetDelay(senderMobility, receiverMobility); 
-
+// 在 PointToPointLaserChannel::TransmitStart 中（卫星-卫星 ISL）
+std::cout << "****************************卫星链路传播时延第二处***********************************" << std::endl;
+std::cout << "ISL pkt-uid=" << p->GetUid() 
+          << " from " << src->GetNode()->GetId() 
+          << " → " << node_other_end->GetId() 
+          << " delay=" << delay.GetSeconds()*1000 << " ms" << std::endl;
   uint32_t wire = src == m_link[0].m_src ? 0 : 1;
 
   Simulator::ScheduleWithContext (m_link[wire].m_dst->GetNode()->GetId (),
