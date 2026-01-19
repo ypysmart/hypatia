@@ -2,7 +2,7 @@ import re
 import matplotlib.pyplot as plt
 
 # Read from txt file
-file_path = 'AlgorithmLog/cwndconsole55.txt'  # Replace with your actual file path if different
+file_path = 'AlgorithmLog/cwndconsole59.txt'  # Replace with your actual file path if different
 with open(file_path, 'r', encoding='utf-8') as file:
     log_content = file.read()
 

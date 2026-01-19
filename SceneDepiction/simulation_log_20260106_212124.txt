@@ -1,0 +1,33 @@
+[-] Loading routing table from 'routing_table.pkl'...
+[+] Routing table loaded successfully.
+
+==================== Initializing Traffic Flows ====================
+[Flow Created] ID: 1, Path: 27->50, Slice: Bulk, Hotspot-Related: Yes
+[Flow Created] ID: 2, Path: 50->37, Slice: URLLC, Hotspot-Related: Yes
+[Flow Created] ID: 3, Path: 6->11, Slice: URLLC, Hotspot-Related: Yes
+[Flow Created] ID: 4, Path: 37->27, Slice: mMTC, Hotspot-Related: Yes
+[Flow Created] ID: 5, Path: 6->27, Slice: mMTC, Hotspot-Related: Yes
+==============================================================
+
+Start Simulation: 2.0 mins, Step: 0.1 mins
+
+>>> Simulation Progress: 0.0 min (0.0%) <<<
+--- [t=0.2 min] Flow 4 (37->27) generating 1 packets ---
+    [Packet Generated] Flow: 4, Pkt_ID: 0, Path: 37->27, Size: 100 bytes, Slice: mMTC, Time: 0.20
+--- [t=0.6 min] Flow 4 (37->27) generating 1 packets ---
+    [Packet Generated] Flow: 4, Pkt_ID: 1, Path: 37->27, Size: 100 bytes, Slice: mMTC, Time: 0.60
+
+>>> Simulation Progress: 1.0 min (50.0%) <<<
+--- [t=1.1 min] Flow 3 (6->11) generating 1 packets ---
+    [Packet Generated] Flow: 3, Pkt_ID: 2, Path: 6->11, Size: 64 bytes, Slice: URLLC, Time: 1.10
+--- [t=1.2 min] Flow 2 (50->37) generating 1 packets ---
+    [Packet Generated] Flow: 2, Pkt_ID: 3, Path: 50->37, Size: 64 bytes, Slice: URLLC, Time: 1.20
+--- [t=1.2 min] Flow 5 (6->27) generating 1 packets ---
+    [Packet Generated] Flow: 5, Pkt_ID: 4, Path: 6->27, Size: 100 bytes, Slice: mMTC, Time: 1.20
+--- [t=1.5 min] Flow 5 (6->27) generating 1 packets ---
+    [Packet Generated] Flow: 5, Pkt_ID: 5, Path: 6->27, Size: 100 bytes, Slice: mMTC, Time: 1.50
+--- [t=1.7 min] Flow 2 (50->37) generating 1 packets ---
+    [Packet Generated] Flow: 2, Pkt_ID: 6, Path: 50->37, Size: 64 bytes, Slice: URLLC, Time: 1.70
+
+Final Congestion Ratio: 0.0000
+Final Packet Loss Rate: 0.0000

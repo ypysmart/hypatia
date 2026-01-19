@@ -9,7 +9,8 @@ import os
 from collections import deque
 from dataclasses import dataclass, field
 from typing import List, Dict, Optional
-import sys  # [新增] 导入sys模块
+import sys
+from datetime import datetime
 
 # ==========================================
 # 1. 全局参数配置 (Constants)
@@ -33,7 +34,7 @@ class Config:
     OMEGA_VEL = 2 * np.pi / ORBIT_PERIOD # 角速度 (rad/min)
     
     # --- 链路参数 ---
-    LINK_CAPACITY_MBPS = 1000.0 # C: 链路容量 (Mbps)
+    LINK_CAPACITY_MBPS = 5.0 # C: 链路容量 (Mbps)
     LINK_DELAY_MS = 20.0        # D: 传播延迟 (ms)
     BUFFER_SIZE_BYTES = 50 * 1024 * 1024 # K: 缓冲区上限 50MB
     
@@ -46,13 +47,13 @@ class Config:
     }
     
     # Hawkes过程参数
-    MU_BACKGROUND = 0.5
+    MU_BACKGROUND = 10
     MEMORY_KERNEL_C = 0.5
     MEMORY_KERNEL_THETA = 0.2
     
     # 热点参数
     HOTSPOT_RATIO = 1
-    HOTSPOT_SET_SIZE = 5
+    HOTSPOT_SET_SIZE = 3
 
 # ==========================================
 # 2. 基础数据结构
@@ -146,10 +147,13 @@ class Link:
         return transferred_packets
 
 # ==========================================
-# 5. 流量生成模型
+# 5. 流量生成模型 (核心修改)
 # ==========================================
 
 class TrafficSource:
+    # [核心修改 1/2] 添加一个类级别的计数器，用于生成自增ID
+    _packet_id_counter = 0
+
     def __init__(self, flow_id, src_id, dst_id, slice_type):
         self.flow_id = flow_id
         self.src_id = src_id
@@ -201,8 +205,10 @@ class TrafficSource:
         for i in range(num_events):
             size = self._get_packet_size()
             self.history.append((current_time, size))
+            
+            # [核心修改 2/2] 使用自增ID，并递增计数器
             pkt = Packet(
-                packet_id=random.randint(0, 1e9),
+                packet_id=TrafficSource._packet_id_counter,
                 flow_id=self.flow_id,
                 src=self.src_id,
                 dst=self.dst_id,
@@ -210,6 +216,7 @@ class TrafficSource:
                 slice_type=self.slice_type,
                 gen_time=current_time
             )
+            TrafficSource._packet_id_counter += 1
             
             print(
                 f"    [Packet Generated] Flow: {pkt.flow_id}, "
@@ -407,14 +414,22 @@ class NetworkSimulator:
         self.stats_loss_rate.append(loss_rate)
 
 # ==========================================
-# 7. 主程序入口与可视化 (核心修改)
+# 7. 主程序入口与可视化
 # ==========================================
 
 if __name__ == "__main__":
-    # [修改] 重定向所有print输出到日志文件
-    log_file_path = "simulation_log.txt"
+    # 创建带时间戳和指定目录的日志文件
+    output_dir = "SceneDepiction"
+    os.makedirs(output_dir, exist_ok=True)
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    log_file_name = f"simulation_log_{timestamp}.txt"
+    log_file_path = os.path.join(output_dir, log_file_name)
+
     original_stdout = sys.stdout
     
+    print(f"Simulation started. All console output will be redirected to '{log_file_path}'")
+
+    # 重定向所有print输出到日志文件
     with open(log_file_path, 'w', encoding='utf-8') as log_file:
         sys.stdout = log_file
 
@@ -430,35 +445,41 @@ if __name__ == "__main__":
         
         sim.run_simulation()
         
-        print(f"\nFinal Congestion Ratio: {sim.stats_congestion_ratio[-1]:.4f}")
-        print(f"Final Packet Loss Rate: {sim.stats_loss_rate[-1]:.4f}")
+        if sim.stats_congestion_ratio and sim.stats_loss_rate:
+            print(f"\nFinal Congestion Ratio: {sim.stats_congestion_ratio[-1]:.4f}")
+            print(f"Final Packet Loss Rate: {sim.stats_loss_rate[-1]:.4f}")
 
-    # [修改] 恢复标准输出
+    # 恢复标准输出
     sys.stdout = original_stdout
     
     print(f"\nSimulation finished. All logs have been saved to '{log_file_path}'")
     
     # 可视化部分仍然在控制台显示，并弹出图表
-    plt.figure(figsize=(12, 5))
-    plt.subplot(1, 2, 1)
-    plt.plot(sim.stats_time, sim.stats_congestion_ratio, 'b-', label='Link Congestion Ratio')
-    plt.xlabel('Time (min)')
-    plt.ylabel('Ratio')
-    plt.title('Network Congestion Evolution')
-    plt.grid(True)
-    plt.legend()
-    
-    plt.subplot(1, 2, 2)
-    plt.plot(sim.stats_time, sim.stats_loss_rate, 'r-', label='System Packet Loss Rate')
-    plt.xlabel('Time (min)')
-    plt.ylabel('Loss Rate')
-    plt.title('Packet Loss Rate Evolution')
-    plt.grid(True)
-    plt.legend()
-    
-    plt.tight_layout()
-    plt.show()
+    if sim.stats_time:
+        plt.figure(figsize=(12, 5))
+        plt.subplot(1, 2, 1)
+        plt.plot(sim.stats_time, sim.stats_congestion_ratio, 'b-', label='Link Congestion Ratio')
+        plt.xlabel('Time (min)')
+        plt.ylabel('Ratio')
+        plt.title('Network Congestion Evolution')
+        plt.grid(True)
+        plt.legend()
+        
+        plt.subplot(1, 2, 2)
+        plt.plot(sim.stats_time, sim.stats_loss_rate, 'r-', label='System Packet Loss Rate')
+        plt.xlabel('Time (min)')
+        plt.ylabel('Loss Rate')
+        plt.title('Packet Loss Rate Evolution')
+        plt.grid(True)
+        plt.legend()
+        
+        plt.tight_layout()
+        plt.show()
 
-    # 再次在控制台打印最终结果
-    print(f"Final Congestion Ratio: {sim.stats_congestion_ratio[-1]:.4f}")
-    print(f"Final Packet Loss Rate: {sim.stats_loss_rate[-1]:.4f}")
+        # 再次在控制台打印最终结果
+        if sim.stats_congestion_ratio and sim.stats_loss_rate:
+            print(f"Final Congestion Ratio: {sim.stats_congestion_ratio[-1]:.4f}")
+            print(f"Final Packet Loss Rate: {sim.stats_loss_rate[-1]:.4f}")
+    else:
+        print("No simulation statistics were collected to generate plots.")
+
